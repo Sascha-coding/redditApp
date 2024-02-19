@@ -8,13 +8,13 @@ import {
     BrowserRouter,
   } from "react-router-dom";
 import routes from "./Routes";
-import App from "../App";
+import AppLayout from "../AppLayout";
 
-export default function AppLayout() {
+export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<App/>}>
+                <Route path="/" element={<AppLayout/>}>
                     <Route></Route>
                     <Route></Route>
                     <Route></Route>
