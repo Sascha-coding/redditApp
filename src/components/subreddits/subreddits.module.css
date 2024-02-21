@@ -1,0 +1,321 @@
+
+.subreddits{
+    position:fixed;
+    right:0px;
+    top:7vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1vh 0vw 1vh 0vw;
+    padding-right:0%;
+    height: 92.5vh;
+    width: 25vw;
+    grid-row:2;
+    grid-column:2;  
+    background:#2222227f; 
+    overflow:hidden;
+    border-top:none;
+    border-left:1px solid orangered;
+}
+
+.subredditsh1{
+    color: rgb(164, 217, 249);;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: bold;
+    font-style: italic;
+    text-decoration: underline;
+    font-size: 3.5rem;
+    height:7.5%;
+    width:100%;
+    margin-top:-1.6%;
+    margin-bottom:2%;
+    text-align: center;
+    display:flex;
+    flex-wrap:wrap;
+    align-content:center;
+    align-items:center;
+    justify-content:center;
+}
+
+.subredditsContainer{
+    border:1px solid silver;
+    display: grid;
+    align-items: center;
+    justify-content:center;
+    height: 100%;
+    width: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    grid-auto-rows: 6vh;
+    row-gap:0.5vh;
+    top:0.55%;
+    position:relative;
+    padding-bottom:1%;
+    grid-template-columns: 100%;
+}
+
+.subredditsContainer::-webkit-scrollbar{
+    background-color:#1c2857;
+    border:orangered 1px solid;
+}
+
+.subredditsContainer::-webkit-scrollbar-thumb{
+    background-color: rgba(255, 68, 0, 0.7);;
+    width:10px;
+    border-radius:25%;
+    border:rgb(164, 217, 249) 1px solid;
+}
+.subredditsContainer::-webkit-scrollbar-button{
+    width:5px;
+    height:1px;
+    background-color:#222327;
+}
+
+.subreddit{
+    display:grid;
+    grid-template-rows: 100%;
+    grid-template-columns:100%;
+    height: 100%;
+    width: 100%;
+    background-color:#1c2857;
+}
+.subredditButton{
+    position: relative;
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 3.445vw 3vw max-content 1fr;
+    overflow:hidden;
+    align-items: center;
+    justify-content: start;
+    height: 100%;
+    width: 100%;
+    background: radial-gradient( ellipse, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.5) 100% );
+    border: 2px solid rgba(255, 68, 0, 0.4);
+    border-style: outset;
+    outline: 2px solid rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    outline-offset: -1.5px;
+    box-shadow: 0px 1px 5px 1px rgb(0 0 0 / 25%), inset 0.5px 0.5px 2px 1px rgb(164, 217, 249, 15%);
+}
+.subredditButton:hover{
+    filter:brightness(120%);
+}
+.rotatingContainer{
+    left:1vw;
+    height: 5vmin;
+    width: 5vmin;
+    position:absolute;
+    opacity:0%;
+    pointer-events:none;
+}
+.light1, .light2, .light3,.light4{
+    z-index:1000;
+    right:5vmin;
+    top:calc(3vw / 2 + 0.5px);
+    position:absolute;
+    width:3px;
+    height:1px;
+    background:var(--blingbling);
+    box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249);
+    pointer-events:none;
+    border:1px solid white;
+    border-radius:50%;
+}
+.light3, .light4{
+    top:calc(1.5vw - 2px);
+    opacity:0%;
+    left:0px;
+    right:unset;
+}
+.subredditButton:first-child, subredditButton:nth-child(2){
+    will-change: rotate;
+}
+.subredditButton:hover > :first-child{
+    animation: rotate1 3.25s ease-in infinite;
+}
+.subredditButton:hover > :nth-child(2){
+    animation: rotate2 3.25s ease-in infinite;
+
+}
+.subredditButton:hover > :nth-child(4) > :first-child{
+    animation: blinker 3.25s ease-in infinite;
+    animation-delay:0.45s;
+}
+
+.subredditImg{
+    height: 5vmin;
+    width: 5vmin;
+    margin-left:1vw;
+    border:1.5px solid orangered;
+    border-radius:50%;
+    box-shadow: 0px 0px 5px 0px rgb(164, 217, 249, 30%);
+    pointer-events:none;
+}
+
+.hr{
+    position:relative;
+    width: 3vw;
+    height:1.5px;
+    background:orangered;
+    border:0.5px solid rgb(164, 217, 249, 30%);;
+    border-radius: 50%;
+    pointer-events:none;
+}
+.lightContainer,.lightContainer2{
+    display:grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    align-items: center;
+    justify-content: center;
+    position:relative;
+    grid-column:4;
+    width:100%;
+    height:100%;
+    grid-row:1;
+    overflow:hidden;
+    pointer-events:none;
+    
+}
+.lightContainer2{
+    grid-column:2;
+}
+.hr2{
+    position:relative;
+    height:1.5px;
+    width:calc(100% + 3px);
+    left: 0px;
+    grid-column:1;
+    grid-row:1;
+    pointer-events:none;
+    background:orangered;
+    border:0.5px solid rgb(164, 217, 249, 30%);;
+    border-radius: 50%;
+}
+.subredditName{
+    position:relative;
+    top: 1px;
+    height:3vh;
+    width:max-content;
+    color: rgba(255, 68, 0, 0.7);;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size:2.5rem;
+    font-weight:100;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    border:1px solid orangered;
+    border-radius:10px;
+    pointer-events:none;
+    line-height:2.5vh;
+}
+.beam{
+    display:flex;
+    flex-direction:row;
+    flex-wrap: wrap;
+    align-content:space-between;
+    justify-items:center;
+    position:absolute;
+    width:1px;
+    height:2px;
+    top:1.5vh;
+    background:var(--blingbling);
+    opacity:0%;
+    pointer-events:none;
+}
+.beamTop, .beamBot{
+    position:absolute;
+    width:5px;
+    height:2px;
+    background:var(--blingbling);
+    opacity:100%;
+    top:0px;
+    left:-2.5px;
+    box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249);
+    pointer-events:none;
+}
+.beamBot{
+    top:unset;
+    bottom:0px;
+}
+.thunder{
+    position:relative;
+    width:10px;
+    height:1px;
+    background-color: rgb(164, 217, 249);
+    border:white 1px solid;
+    border-radius:50%;
+}
+@keyframes rotate1 {
+    0%{
+        filter:brightness(100%);
+        opacity:100%;
+    }
+    3.875%{
+        rotate: -45deg;
+    }
+    7.75%{
+        rotate: -90deg; 
+        
+    }
+    11.625%{
+        rotate: -135deg; 
+    }
+    15.49%{
+        filter:brightness(150%);
+        opacity:100%
+    }
+    15.5%{
+        filter:brightness(100%);
+        opacity:0%;
+        rotate: -180deg;
+    }
+}
+@keyframes rotate2 {
+    0%{
+        filter:brightness(100%);
+        opacity:100%;
+    }
+    3.875%{
+        opacity:100%;
+        rotate: 45deg;
+    }
+    7.75%{
+        rotate: 90deg; 
+    }
+    11.625%{
+        rotate: 135deg; 
+    }
+    15.49%{
+        filter:brightness(150%);
+        opacity:100%
+    }
+    15.5%{
+        filter:brightness(100%);
+        opacity:0%;
+        rotate: 180deg;
+    }
+}
+@keyframes blinker {
+    0%{
+        overflow:unset;
+        width:20px;
+        filter:brightness(150%);
+        opacity:100%;
+        left: 0px;
+    }
+    3%{
+        left:20px;
+        width:3px;
+    }
+    13.99%{
+        opacity:100%;
+    }
+    14%{
+        overflow:hidden;
+        filter:brightness(150%);
+        opacity:0%;
+        left:3vw;
+    }
+}
+
