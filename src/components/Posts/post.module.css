@@ -2,29 +2,28 @@
     display:grid;
     grid-auto-rows: 100%;
     grid-template-columns: 100%;
-    height: fit-content;
     width: 100%;
-    background-color:#2222227f;
-    color: white;
-    
+    height:max-content;
+    row-gap: 2vh;
+    background-color:#0015ff0c;
+    border:1px solid rgba(255, 68, 0, 0.4);
+    margin-bottom:5vh;
 }   
+
 
 .postContainer{
     grid-row:1;
     grid-column:1;
     display: flex;
     flex-direction: column;
-    align-items: start;
+    align-items: center;
     justify-items:center;
-    justify-content:start;
-    height: 100%;
-    min-height:min-content;
+    justify-content:center;
+    height: max-content;
+    max-height:100%;
     width: 100%;
-    padding-left:1.5vw;
-    padding-right:1.5vw;
     padding-top:1.5vh;
-    border:1px solid rgba(255, 68, 0, 0.7);
-    border-bottom:2px solid rgba(255, 68, 0, 0.7);
+    padding-bottom:1.5vh;
 }
 
 .postH3{
@@ -44,21 +43,17 @@
 }
 .imgContainer{
     order:2;
-    width: 100%;
-    height: fit-content;
-    margin-bottom:1vh;
+    width: fit-content;
     display: flex;
     flex-direction: column;
-    flex-wrap:wrap;
     align-items:center;
-    align-content:center;
-    justify-content: center;
     justify-items:center;
 }
 .postImg, .postVid{
-    width: 100%;
     height: fit-content;
+    max-height:77vh;
     min-height:3vh;
+    max-width:54vw;
     margin-bottom:1vh;
 }
 .postVid{
@@ -67,33 +62,37 @@
 .postInfo{
     order:3;
     width: 100%;
-    height: fit-content;
+    height: 4vh;
     display: flex;
     flex-direction: row;
     justify-content:space-between;
     align-items:center;
 }
 .postAuthor{
+    height:100%;
     position:relative;
-    height:fit-content;
     width:fit-content;
     font-size:1.8rem;
     color:rgba(255, 68, 0, 0.7);
+    margin-right:1vw;
 }
 .voteDiv{
     position:relative;
+    bottom:calc(1vh - 1px);
     right:0px;
     display:flex;
     flex-direction: row;
-    height: fit-content;
+    height: max-content;
     width:fit-content;
     border-right:none;
     filter:brightness(120%);
+    align-items: flex-start;
 }
 .ups{
     width:100%;
-    height:fit-content;
+    height:3vh;
     font-size:2rem;
+    align-content:center;
     font-weight:bold;   
     text-align:center;
     color:rgba(255, 68, 0, 0.7);
@@ -119,6 +118,8 @@
 }
 .selfText{
     width: 100%;
+    max-width:100%;
+    word-break:break-all;
     height: fit-content;
     font-size: 2rem;
     text-align:start;
@@ -128,25 +129,29 @@
 .HR{
     order:3;
     width: 100%;
-    height: 2px;
-    background-color: rgba(255, 68, 0, 0.7);;
-    color: rgba(255, 68, 0, 0.7);;
+    height: 4px;
+    background-color: rgba(255, 68, 0, 0.7);
+    color: rgba(255, 68, 0, 0.7);
+    box-shadow:0px 0px 0px 0.5px 3px var(--blingbling);
     border: 1px solid rgb(164, 217, 249, 50%);
     border-radius:50%;
-    margin-bottom:1vh;
+    margin:0px;
 }
 .commentsContainer{
     order:4;
     display:grid;
-    grid-template-rows:max-content 1fr;
+    grid-template-rows:min-content 1fr;
     grid-template-columns:100%;
     width: 100%;
     height: fit-content;
-    align-items: start;
+    align-items: center;
     justify-items:center;
-    justify-content:start;
+    justify-content:center;
     align-content:start;
+    position:relative;
+    bottom:-1vh;
 }
+
 
 .openCommentsContainer{
     grid-row:1;
@@ -168,7 +173,12 @@
     color: rgba(255, 68, 0, 0.7);;
     justify-self:center;
     background-color:#ffffff05;
-    border:1px solid rgba(255, 68, 0, 0.7);;
+    border:1px solid rgba(255, 68, 0, 0.7);
+    margin-bottom:1vh;
+    margin-left:1vw;
+}
+.openComments:first-of-type{
+    margin-left:0vw;
 }
 .openCommentsContainer:hover{
     filter:brightness(120%)
@@ -181,10 +191,6 @@
     display:grid;
     grid-auto-rows:max-content;
     grid-template-columns: 100%;
-    align-items: center;
-    justify-items:center;
-    justify-content:center;
-    align-content:center;
 }
 .commentContainer{
     display:grid;
@@ -193,37 +199,45 @@
     width: 100%;
     height:fit-content;
     min-height:10vh;
-    align-items: center;
-    justify-items:start;
-    justify-content:start;
-    align-content:center;
     border-bottom:1px solid rgba(255, 68, 0, 0.7);
     padding-bottom:1vh;
+    padding-top:1vh;
+    align-items: center;
+    justify-items:center;
+    justify-content:center;
+    align-content:center;
 }
+  
 .commentSpan{
+    height:fit-content;
     grid-column:1;
-    width:fit-content;
+    width:max-content;
     font-size:1.8rem;
-    justify-self:center;
     color:rgba(255, 68, 0, 0.7);
+    text-align:left;
+    align-content:center;
 }
 .comment{
     position:relative;
-    justify-self:center;
     grid-row:1/3;
     grid-column:2;
     font-size:2rem;
     text-align:start;
     word-wrap: break-word;
     width:95%;
+    max-width:40vw;
+    max-height:fit-content;
     color:rgba(195, 231, 253, 0.724);
+}
+.comment > a{
+    word-wrap:break-word;
 }
 
 .commentVoteDiv{
     grid-row:1/3;
     grid-column:3;
-    width:max-content;
-    height:100%;
+    width:fit-content;
+    height:fit-content;
     display:flex;
     flex-direction: row;
     align-items: center;

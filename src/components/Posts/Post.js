@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./post.module.css";
 import { UpVote, DownVote } from "../../data/upAndDownVote.js";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,79 +11,114 @@ import {
   setShowCommentsForPost,
   subredditSelector,
 } from "../../features/redditSlice.js";
+import { InView } from "react-intersection-observer";
 
 function Post(props) {
   const [buttonText, setButtonText] = useState("Show");
   const selectedSubreddit = useSelector(subredditSelector);
-  const posts = useSelector(postsSelector);
-  const post = posts.find((post) => post.permalink === props.permalink);
+  const posts = props.posts;
+  const post = posts.filter((post) => post.permalink === props.permalink)[0];
   const selectedComments = useSelector(commentsSelector);
   const loading = useSelector(commentsState);
   const [comments, setComments] = useState(selectedComments);
   const dispatch = useDispatch();
-  const [minWidth, setminWidth] = useState("0px");
+  const [observerCreated, setObserverCreated] = useState(false);
 
   useEffect(() => {
     setComments(selectedComments);
-    getWidths();  
-  }, []);
+    const found = props.allObservingArrayOfObservingObservers.filter(observer => observer.id === props.id)
+    const element = document.getElementById(props.id);
+    if (!observerCreated && found.length === 0) {
+      const observer = new IntersectionObserver(() => props.SetIndex(props.id), { threshold: calculateThreshold(element.offsetHeight) });
+      observer.id = props.id;
+      observer.observe(element);
+      props.allObservingArrayOfObservingObservers.push(observer)
+      setObserverCreated(true);
+    }else if(!observerCreated){
+      const observer = found[0]
+      observer.observe(element);
+      props.allObservingArrayOfObservingObservers.push(observer)
+    }else{
+      props.setObserverCreated(true);
+    }
+    
+  }, [posts]);
+  
+  function calculateThreshold(offsetHeight){
+    const viewportHeight = window.innerHeight;
+    const thresholdFactor = 1;
+    const over = (viewportHeight - offsetHeight);
+    let threshold = 0.9;
+    if(over < 0){
+      threshold = viewportHeight / (offsetHeight);
+      threshold = 1 - threshold;
+    }
+    return threshold
+  }
+
+  
 
   const closeComments = () => {
-    setButtonText("Show");
-    setComments([]);
-    dispatch(removeComments({}));
+    setButtonText("Show"); 
     dispatch(
-      setShowCommentsForPost({ value: false, post: post, posts: posts })
+      setShowCommentsForPost({ value: false, permalink: props.permalink, posts: posts, subreddit: selectedSubreddit })
     );
   };
   const openComments = async (permalink) => {
-    const post = posts.find((post) => post.permalink === permalink);
+    const post = posts.filter((post) => post.permalink === permalink)[0]; 
     if (post.comments.length === 0) {
-      dispatch(fetchComments(permalink, posts));
+      dispatch(fetchComments(permalink,selectedSubreddit));
     } else {
       dispatch(
         setShowCommentsForPost({
           value: true,
-          post: post,
+          permalink: props.permalink,
           posts: posts,
-          comments: post[comments],
+          subreddit: selectedSubreddit,
         })
       );
     }
     setButtonText("Hide");
   };
-
-  const getWidths = () => {
-    const postId = post.id;
-    const minWidth = document.getElementById(postId).offsetWidth;
-    setminWidth(minWidth + "px");
+  const savePostToDb = () => {
+    props.savePost(post);
   }
   return (
     <>
-      <div className={styles.post + " " + selectedSubreddit}>
-        <div className={styles.postContainer}>
-          <h3 className={styles.postH3}>{post.title}</h3>
-          
+      <div
+        
+        className={styles.post + " " + selectedSubreddit + " postElement"}
+        onMouseOver={(e) => props.handleMouseEnter(props.id)}
+      >
+        <div id={props.id} className={styles.postContainer}>
+          <h3 id={post.id} className={styles.postH3}>
+            {post.title}
+          </h3>
+
           <div className={styles.imgContainer}>
-            {post.domain === "i.redd.it" || post.domain === "v.redd.it" ? (!post.isVideo ? (
-              <>
-                <img className={styles.postImg} src={post.url} />
-              </>
+            {post.domain === "i.redd.it" ||
+            post.domain === "v.redd.it" ? (
+              !post.isVideo ? (
+                <>
+                  <img className={styles.postImg} src={post.url} />
+                </>
+              ) : (
+                <>
+                  <video
+                    className={styles.postVid}
+                    autoPlay="true"
+                    preload="true"
+                    controls
+                  >
+                    <source src={post.url}></source>
+                  </video>
+                </>
+              )
             ) : (
               <>
-                <video
-                  className={styles.postVid}
-                  autoPlay="true"
-                  preload="true"
-                  controls
-                >
-                  <source src={post.url}></source>
-                </video>
+                <p className={styles.selfText}>{post.selftext}</p>
               </>
-            )):
-            <>
-              <p className={styles.selfText}>{post.selftext}</p>
-            </>}
+            )}
             <div className={styles.postInfo}>
               <span className={styles.postAuthor}>
                 {"Post created by: " +
@@ -118,9 +153,13 @@ function Post(props) {
               >
                 {loading ? "Loading..." : buttonText + " comments"}
               </button>
+              <button className={styles.openComments} onClick={() => savePostToDb()}>Save Post</button>
             </div>
             {post.showingComments ? (
-              <div className={styles.commentList} id={post.id + "_commentList"}>
+              <div
+                className={styles.commentList}
+                id={post.id + "_commentList"}
+              >
                 {post.comments.map((comment) => (
                   <div key={comment.id} className={styles.commentContainer}>
                     <span className={styles.commentSpan}>
@@ -134,7 +173,9 @@ function Post(props) {
                       key={comment.id}
                       dangerouslySetInnerHTML={{ __html: comment.body }}
                     ></p>
-                    <div className={styles.commentVoteDiv} style={{"min-width": minWidth}}>
+                    <div
+                      className={styles.commentVoteDiv}
+                    >
                       <button className={styles.voteButton}>
                         <UpVote />
                       </button>

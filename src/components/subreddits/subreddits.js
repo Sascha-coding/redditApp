@@ -1,76 +1,86 @@
 import { useSelector, useDispatch } from "react-redux";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  fetchSubreddits,
   selectSubReddits,
 } from "../../features/subredditsSlice";
 import style from "./subreddits.module.css";
-import { AddAnimations1, AddAnimations2 } from "./subreditsAnimations.js";
-import { setSelectedSubreddit, fetchPosts, toggleCloseAllComments,postsSelector} from "../../features/redditSlice";
 
-function Subreddits() {
+import {
+  setSelectedSubreddit,
+  toggleCloseAllComments,
+  postsThunk,
+} from "../../features/redditSlice";
+
+function Subreddits(props) {
   const dispatch = useDispatch();
-  const [sheets, setSheets] = useState([]);
   const subreddits = useSelector(selectSubReddits);
-  const posts = useSelector(postsSelector);
-  useEffect(() => {
-    dispatch(fetchSubreddits());
-  }, [dispatch]);
+  const [stateLoaded, setStateLoaded] = useState(false);
 
-  const loadSubreddit = (subreddit) => {
-    const commentLists = document.getElementsByClassName("commentList");
-    for (let i = 0; i < commentLists.length; i++) {
-      document.removeChild(commentLists[i]);
-    }
-    dispatch(toggleCloseAllComments({value:true}))
+  const loadSubreddit = async (subreddit) => {
+    let audio = document.getElementById("audio2");
+    audio.currentTime = 0;
+    audio.play()
+    dispatch(toggleCloseAllComments({ value: true }));
     dispatch(setSelectedSubreddit(subreddit.display_name_prefixed));
-  }
-
+    dispatch(
+      postsThunk({
+        prefix: subreddit.display_name_prefixed,
+        id: "",
+        curPosts: [],
+      })
+    );
+  };
   return (
     <aside className={style.subreddits}>
-    <AddAnimations1/>
-    <AddAnimations2/>
       <h1 className={style.subredditsh1}>Subreddits</h1>
       <div className={style.subredditsContainer}>
         {subreddits.map((subreddit) => (
           <div className={style.subreddit} key={subreddit.id}>
-            <button id={subreddit.id} onClick={(e) => loadSubreddit(subreddit)} className={style.subredditButton}>
-              <div className={style.rotatingContainer}>
-                <div className={style.light1}></div>
+            <button
+              id={subreddit.id}
+              onClick={(e) => loadSubreddit(subreddit)}
+              
+              className={style.subredditButton}
+            >
+              <div className={style.imgWrapper}>
+                <div className={style.beam2}>
+                  <div className={style.light1}></div>
+                  <div className={style.light2}></div>
+                </div>
+
+                <img
+                  className={style.subredditImg}
+                  src={
+                    subreddit.icon_img ||
+                    `https://api.adorable.io/avatars/25/${subreddit.display_name}`
+                  }
+                />
               </div>
-              <div className={style.rotatingContainer}>
-                <div className={style.light2}></div>
-              </div>
-              <img
-                className={style.subredditImg}
-                src={
-                  subreddit.icon_img ||
-                  `https://api.adorable.io/avatars/25/${subreddit.display_name}`
-                }
-              />
               <div className={style.lightContainer2}>
                 <div className={style.light4}></div>
-                <hr className={style.hr}></hr>
+                <hr className={style.subredditHr}></hr>
               </div>
-              <div className={style.subredditName + " srn"}>
-                <div className={style.beam}>
-                  <div className={style.beamTop+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.thunder+" th"}></div>
-                  <div className={style.beamBot+" th"}></div>
+                <div className={style.subredditName + " srn"}>
+                  <div className={style.beam} id={"beam-" + subreddit.id}>
+                    <div className={style.beamTop + " th"}></div>
+                    <div className={style.beamBot + " th"}></div>
+                  </div>
+                  <div id="container" className={style.srdDiv}>
+                    <div id={subreddit.id + "-span"} className={style.srdn}>
+                      {subreddit.display_name}
+                    </div>
+                    <canvas
+                      className={style.textShadowWrapper + " " + subreddit.id}
+                    ></canvas>
+                  </div>
                 </div>
-                {subreddit.display_name}
-              </div>
               <div className={style.lightContainer + " lc"}>
                 <div className={style.light3}></div>
-                <hr className={style.hr + " " + style.hr2}></hr>
+                <hr
+                  className={style.subredditHr + " " + style.subredditHr2}
+                ></hr>
               </div>
+              
             </button>
           </div>
         ))}
@@ -80,3 +90,7 @@ function Subreddits() {
 }
 
 export default Subreddits;
+/*<div className={style.srdDiv}>
+                  <span className={style.srdn}>{subreddit.display_name}</span>
+                </div>
+                */

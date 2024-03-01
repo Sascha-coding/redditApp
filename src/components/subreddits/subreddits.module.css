@@ -6,35 +6,36 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1vh 0vw 1vh 0vw;
+    padding: 0vh 0vw 0vh 0vw;
     padding-right:0%;
-    height: 92.5vh;
-    width: 25vw;
+    height: 100%;
+    width: 25.6vw;
     grid-row:2;
     grid-column:2;  
     background:#2222227f; 
-    overflow:hidden;
     border-top:none;
-    border-left:1px solid orangered;
+    z-index:1000;
 }
 
 .subredditsh1{
-    color: rgb(164, 217, 249);;
+    color: rgb(164, 217, 249);
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: bold;
     font-style: italic;
     text-decoration: underline;
     font-size: 3.5rem;
-    height:7.5%;
-    width:100%;
-    margin-top:-1.6%;
-    margin-bottom:2%;
+    height: 7vh;
+    width: 25vw;
+    padding-left:1vw;
+    margin-top: 0%;
+    margin-bottom: 0%;
     text-align: center;
-    display:flex;
-    flex-wrap:wrap;
-    align-content:center;
-    align-items:center;
-    justify-content:center;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+    background-color:#1F253D;
+    justify-content: center;
 }
 
 .subredditsContainer{
@@ -50,13 +51,12 @@
     row-gap:0.5vh;
     top:0.55%;
     position:relative;
-    padding-bottom:1%;
     grid-template-columns: 100%;
 }
 
 .subredditsContainer::-webkit-scrollbar{
     background-color:#1c2857;
-    border:orangered 1px solid;
+    border:rgba(255, 68, 0, 0.7) 1px solid;
 }
 
 .subredditsContainer::-webkit-scrollbar-thumb{
@@ -85,8 +85,7 @@
     grid-row: 1;
     display: grid;
     grid-template-rows: 100%;
-    grid-template-columns: 3.445vw 3vw max-content 1fr;
-    overflow:hidden;
+    grid-template-columns: 3.445vw 3.445vw max-content 1fr;
     align-items: center;
     justify-content: start;
     height: 100%;
@@ -98,6 +97,9 @@
     cursor: pointer;
     outline-offset: -1.5px;
     box-shadow: 0px 1px 5px 1px rgb(0 0 0 / 25%), inset 0.5px 0.5px 2px 1px rgb(164, 217, 249, 15%);
+}
+.subredditButton > *{
+    pointer-events:none;
 }
 .subredditButton:hover{
     filter:brightness(120%);
@@ -112,56 +114,86 @@
 }
 .light1, .light2, .light3,.light4{
     z-index:1000;
-    right:5vmin;
-    top:calc(3vw / 2 + 0.5px);
     position:absolute;
-    width:3px;
     height:1px;
+    width:2px;
     background:var(--blingbling);
     box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249);
     pointer-events:none;
     border:1px solid white;
     border-radius:50%;
 }
+.light1, .light2{
+    height:7px;
+    border-radius:50%;
+}
+.light1{
+    top:0px;
+}
+.light2{
+    bottom:0px;
+}
 .light3, .light4{
-    top:calc(1.5vw - 2px);
-    opacity:0%;
-    left:0px;
-    right:unset;
+    top: calc(1.5vw - 2px);
+    opacity: 0;
+    right: unset;
+    width: 3px;
 }
-.subredditButton:first-child, subredditButton:nth-child(2){
-    will-change: rotate;
+.light3{
+    left: 0.45vw;
+    z-index:1;
 }
-.subredditButton:hover > :first-child{
+
+.subredditButton:hover > .imgWrapper > :first-child{
+    animation: blinker2 3.25s ease-in infinite;
+}
+.subredditButton:hover > .imgWrapper > :first-child > :first-child{
     animation: rotate1 3.25s ease-in infinite;
 }
-.subredditButton:hover > :nth-child(2){
+.subredditButton:hover > .imgWrapper > :first-child > :nth-child(2){
     animation: rotate2 3.25s ease-in infinite;
-
 }
-.subredditButton:hover > :nth-child(4) > :first-child{
+.subredditButton:hover > :nth-child(2) > :first-child{
     animation: blinker 3.25s ease-in infinite;
     animation-delay:0.45s;
 }
-
+.imgWrapper{
+    grid-row:1;
+    grid-column:1;
+    position:relative;
+    height: 100%;
+    width: 100%;
+    pointer-events:none;
+    display:grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    justify-content:end;
+    align-content:center;
+    justify-items:end;
+    align-items:center;
+}
 .subredditImg{
+    grid-row:1;
+    grid-column:1;
+    position:relative;
     height: 5vmin;
     width: 5vmin;
-    margin-left:1vw;
-    border:1.5px solid orangered;
+    border:1.5px solid rgba(255, 68, 0, 0.7);
     border-radius:50%;
     box-shadow: 0px 0px 5px 0px rgb(164, 217, 249, 30%);
     pointer-events:none;
 }
 
-.hr{
+.subredditHr{
     position:relative;
-    width: 3vw;
-    height:1.5px;
-    background:orangered;
-    border:0.5px solid rgb(164, 217, 249, 30%);;
+    left:2px;
+    width: 3.445vw;
+    height:1px;
+    background:white;
+    border:1.5px solid var(--blingbling);
     border-radius: 50%;
     pointer-events:none;
+    box-shadow:#0c098582 0 0 5px 1px
 }
 .lightContainer,.lightContainer2{
     display:grid;
@@ -174,54 +206,117 @@
     width:100%;
     height:100%;
     grid-row:1;
-    overflow:hidden;
     pointer-events:none;
     
 }
 .lightContainer2{
     grid-column:2;
 }
-.hr2{
+
+.subredditHr2{
     position:relative;
-    height:1.5px;
-    width:calc(100% + 3px);
-    left: 0px;
+    width:100%;
     grid-column:1;
     grid-row:1;
     pointer-events:none;
-    background:orangered;
-    border:0.5px solid rgb(164, 217, 249, 30%);;
+    background:white;
+    border:1.5px solid var(--blingbling);
     border-radius: 50%;
+    box-shadow:#0c098582 0 0 5px 1px
 }
+
 .subredditName{
+    border:1px solid skyblue;
+    grid-row:1;
+    grid-column:3;
     position:relative;
-    top: 1px;
+    display:grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    top:1px;
     height:3vh;
-    width:max-content;
-    color: rgba(255, 68, 0, 0.7);;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-size:2.5rem;
-    font-weight:100;
-    text-decoration: underline;
-    text-decoration-thickness: 1.5px;
-    border:1px solid orangered;
-    border-radius:10px;
+    width:100%;
     pointer-events:none;
     line-height:2.5vh;
 }
+.srdDiv{
+    z-index:1;
+    padding:0vh 1vw 0vh 1vw;
+    grid-row:1;
+    grid-column:1;
+    position:relative;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    background:transparent;
+    display:contents;
+}
+
+.textShadowWrapper{
+    display:flex;
+    width:100%;
+    height:100%;
+    grid-row:1;
+    grid-column:1;
+    position:absolute;
+    pointer-events:none;
+}
+.srdn{
+    border-radius:20%;
+    grid-row: 1;
+    grid-column: 1;
+    font-size: 36px;
+    height: 100%;
+    width: fit-content;
+    max-width: 100%;
+    position: relative;
+    display: grid;
+    text-align: start;
+    z-index: 1;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    color:transparent;
+}
 .beam{
+    transition:left 0.4s ease-in-out;
+    z-index:2;
     display:flex;
     flex-direction:row;
     flex-wrap: wrap;
     align-content:space-between;
     justify-items:center;
     position:absolute;
-    width:1px;
-    height:2px;
+    width:5px;
+    box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249), #0c098582 0 0 10px 3px;
+    height:1px;
+    left:0px;
     top:1.5vh;
     background:var(--blingbling);
     opacity:0%;
     pointer-events:none;
+}
+.beam2{
+    position:absolute;
+    align-self:center;
+    z-index:10000;
+    grid-column:1;
+    grid-row:1;
+    background:var(--blingbling);
+    box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249), #0c098582 0 0 10px 3px;
+    height:1px;
+    width:1px;
+    top:calc(2.5vmin + 0.5px);
+    left:1vw;
+    will-change:left,top,height;
+    display:grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    align-content:center;
+    justify-items:center;
+    align-items:center;
+    justify-content:center;
+    opacity:0%
 }
 .beamTop, .beamBot{
     position:absolute;
@@ -296,9 +391,38 @@
         rotate: 180deg;
     }
 }
+@keyframes blinker2 {
+    0%{
+        opacity:100%;
+        height:1px;
+        left:1vw;
+    }
+    3.875%{
+        
+    }
+    7.75%{
+        height: calc(6vmin);
+        top: 0vmin;
+        left: calc(2.5vmin + 1vw);
+    }
+    11.625%{
+       
+    }
+    15.49%{
+        left:calc(5vmin + 1vw);
+        opacity:100%;
+        height:10px;
+    }
+    15.5%{
+        top:calc(2.5vmin + -1px);
+        opacity:0%;
+        height:1px;
+        left:1vw;
+}      
+    
+}
 @keyframes blinker {
     0%{
-        overflow:unset;
         width:20px;
         filter:brightness(150%);
         opacity:100%;
@@ -312,10 +436,37 @@
         opacity:100%;
     }
     14%{
-        overflow:hidden;
         filter:brightness(150%);
         opacity:0%;
         left:3vw;
     }
 }
 
+@keyframes grow{
+    0%{
+        left:calc(1vw);
+        opacity: 100%;
+        height:1px;
+        top:calc(2.5vmin);
+    }
+    3.875%{
+        
+    }
+    7.75%{
+        top:0vw;
+        left: calc(1vw + 2.5vmin);
+        height: calc(5.5vmin);
+    }
+    11.625%{
+        
+    }
+    15.49%{
+        opacity:100%;
+    }
+    15.5%{
+        top:calc(2.5vmin);
+        height:2px;
+        left:calc(5vmin + 2vw);
+        opacity:0%;
+    }
+}

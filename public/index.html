@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-            <title>redditApp</title>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        </head>
-    <body>
-        <div id="root" class="root">
-           
-        </div>
-    </body>
+  <head>
+    <meta charset="utf-8" />
+    <title>redditApp</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script>
+      window.addEventListener("load", () => {
+        console.log("window loaded");
+      });
+    </script>
+  </head>
+  <body>
+    <audio id="audio" src="/sounds/hover.mp3" playbackRate="0.8" type="audio/mp3"></audio>
+    <audio id="audio2" src="/sounds/click.mp3" type="audio/mp3"></audio>
+
+    <div id="root" class="root"></div>
+  </body>
 </html>
