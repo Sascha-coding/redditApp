@@ -54,7 +54,7 @@ const App = (props) => {
           }
         })
       }
-      
+      console.log("what?")
     },[entered, subreddits.length])
 
   const savePost = async(post) => {

@@ -134,14 +134,18 @@
     bottom:0px;
 }
 .light3, .light4{
-    top: calc(1.5vw - 2px);
+    
     opacity: 0;
     right: unset;
     width: 3px;
 }
 .light3{
+    top: calc(1.5vw - 2px);
     left: 0.45vw;
     z-index:1;
+}
+.light4{
+    top: calc(1.5vw - 1px);
 }
 
 .subredditButton:hover > .imgWrapper > :first-child{
@@ -238,6 +242,7 @@
     width:100%;
     pointer-events:none;
     line-height:2.5vh;
+    filter:brightness(80%);
 }
 .srdDiv{
     z-index:1;
@@ -317,7 +322,7 @@
     opacity:0%
 }
 .beam3{
-    
+
 }
 .beamTop, .beamBot{
     position:absolute;

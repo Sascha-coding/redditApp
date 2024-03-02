@@ -230,12 +230,13 @@ canvas{
 }
 .headerButton{
   color:var(--blingbling);
-  font-size:1.4rem;
+  font-size:1.8rem;
   height:5vh;
-  width:5vw;
+  width:7vw;
   background-color:#00000067;
   border:1px solid var(--blingbling);
   border-radius:20%;
+  line-height: 2vh;
 }
 
 .welcomeCard{

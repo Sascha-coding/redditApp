@@ -1,5 +1,5 @@
 let leBlue = "rgb(164, 217, 249)";
-
+let leRed = "rgba(255, 68, 0, 0.9)";
 
 export const AddAnimations1 = () => {
     const subredditParagraphs = document.getElementsByClassName("srn");
@@ -30,7 +30,7 @@ export const AddAnimations1 = () => {
       const beam = paragraph.firstChild;
       const beam2 = paragraph.lastChild;
       const width = paragraph.offsetWidth;
-      beam2.style.left = width + "px";
+      beam2.style.left = width-2 + "px";
       const button = paragraph.parentElement;
       
       sheet.insertRule(
@@ -71,7 +71,7 @@ export const AddAnimations1 = () => {
           0% {
             width:3px;
             height:2px;
-            left: ${width}px;
+            left: ${width-1}px;
             opacity: 50%;
           }
           3.1%{
@@ -110,13 +110,14 @@ export const AddAnimations1 = () => {
           intervalId = setInterval(() => {
             let animationId = requestAnimationFrame(changeTextColor);
             cancelAnimationFrame(animationId)
-            changeTextColor(event.target.id,intervalId,1,animationId);
+            changeTextColor(event.target.id,intervalId,1,false);
             
           },4);
           
         },1000)
       })
       button.addEventListener("mouseout", (event) => {
+        beam2.style.animation = ``;
         clearTimeout(timeOutId);
         audio.pause();
         audio.currentTime = 0;
@@ -191,17 +192,15 @@ export const AddAnimations1 = () => {
         canvas.width = canvas.previousElementSibling.offsetWidth;
         canvas.height = canvas.previousElementSibling.offsetHeight;
         ctx = canvas.getContext("2d");
-        addedAnimations[id] = {done:false, lastIntervalId:"", id:id, ctx:ctx, canvas:canvas, dn:subreddit.display_name, data:""}
+        addedAnimations[id] = {ready:false,done:false, lastIntervalId:"", id:id, ctx:ctx, canvas:canvas, dn:subreddit.display_name, data:""}
       }
       
-      let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      addedAnimations[id].imageData = imageData;
       ctx.font = `36px 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif`;
       ctx.letterSpacing="1px";
-      ctx.fillStyle = "orangered"; // Set fill style for the text
+      ctx.fillStyle = leRed; // Set fill style for the text
       ctx.textAlign = "start";
       ctx.textBaseline = "bottom";
-      ctx.strokeStyle = "orangered";
+      ctx.strokeStyle = leRed;
       
       ctx.moveTo(0, canvas.height - 4);
       ctx.lineTo(canvas.width,canvas.height - 4);
@@ -216,104 +215,119 @@ export const AddAnimations1 = () => {
 let x = 0;
 const getNextInterval = (id) => {
   let phase3IntervalId = setInterval(() => {
-    changeTextColor(id,phase3IntervalId,3);
+    changeTextColor(id,phase3IntervalId,3,true);
   }, 4);
+  addedAnimations[id].lastPhase = 1;
 }
 
 
-export const changeTextColor = (id,intervalId,phase,animationId) => {
+export const changeTextColor = (id,intervalId,phase,ready) => {
   if(!addedAnimations[id]){
     return
   }
-  animationId = requestAnimationFrame(changeTextColor);
+  let animationId = requestAnimationFrame(changeTextColor);
 
   
   const canvas = addedAnimations[id].canvas;
   const ctx = addedAnimations[id].ctx;
   const dn = addedAnimations[id].dn
   addedAnimations[id].lastIntervalId = intervalId;
-  ctx.clearRect(0,0,canvas.width,canvas.height); 
   let gradient;
+  if(addedAnimations[id].done && addedAnimations[id].lastPhase === 3){
+    ready = true;
+  }
   if(phase === 1){
-    
     const animationElement = document.getElementById(`beam-${id}`);
     const computedStyle = window.getComputedStyle(animationElement);
+    if(!addedAnimations[id].done){
+    
 
     const width = Number(computedStyle.left.slice(0, computedStyle.left.length - 2)).toFixed(2);
   
     let scaledWidth = (width / canvas.width) >= 1 ? 0.99 : (width / canvas.width);
+    ctx.clearRect(0,0,canvas.width,canvas.height); 
     gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
     gradient.addColorStop(scaledWidth, leBlue); // Start color (left)
     gradient.addColorStop(scaledWidth, leBlue); // Start color (left)
-    gradient.addColorStop(scaledWidth, "orangered");
-    gradient.addColorStop(1, "orangered"); // End color (right)
+    gradient.addColorStop(scaledWidth, leRed);
+    gradient.addColorStop(1, leRed); // End color (right)
     ctx.fillStyle=gradient;
     ctx.strokeStyle=gradient;
-    console.log(addedAnimations[id].done);
-    if(scaledWidth >= 0.99 || addedAnimations[id].done){ 
+    if(scaledWidth >= 0.99){ 
       ctx.fillStyle=leBlue;
       ctx.strokeStyle= leBlue;
       addedAnimations[id].done = true;
       if(addedAnimations[id].lastPhase === 3){
-        clearInterval(intervalId);
-        cancelAnimationFrame(animationId)
-        animationElement.style.left = `${canvas.width}px`;
-        animationElement.style.animation = ``;
-        getNextInterval(id)
+        addedAnimations[id].ready=true;
       }
     }
-    
-    
-  }else if(phase === 2){
-    /*x+=0.01;
-    if (x >= 0.5) {
+    ctx.moveTo(0, canvas.height - 4);
+    ctx.lineTo(canvas.width,canvas.height - 4);
+    ctx.moveTo(0, canvas.height - 5);
+    ctx.lineTo(canvas.width,canvas.height - 5);
+    ctx.moveTo(0, canvas.height - 6);
+    ctx.lineTo(canvas.width,canvas.height - 6);
+    ctx.stroke();
+    ctx.fillText(`${dn}`,  0,canvas.height);  
+  }
+  if(addedAnimations[id].ready === true){
       clearInterval(intervalId);
-    }else{
-    let x2 = x * 2;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    gradient = ctx.createLinearGradient(canvas.width / 2, canvas.height, canvas.width / 2, 0);
-    gradient.addColorStop(0, "skyblue");
-    gradient.addColorStop(x, "skyblue");
-    gradient.addColorStop(0.495, "white");
-    gradient.addColorStop(0.505, "white");
-    gradient.addColorStop(x2, "skyblue");
-    gradient.addColorStop(1, "skyblue");
-    }*/
-  }else if(phase === 3 && !addedAnimations[id].done){
+      cancelAnimationFrame(animationId)
+      animationElement.style.left = `${canvas.width}px`;
+      animationElement.style.animation = ``;
+      addedAnimations[id].done = false;
+      addedAnimations[id].ready = false;
+      getNextInterval(id)
+      
+  }
+}else if(phase === 3){
     console.log("Phase 3")
     const animationElement = document.getElementById(`beam-${id}-2`);
     animationElement.style.animation = `revbeam${id} 1.5s ease-in-out`;
     animationElement.style.animationFillMode = "forwards";
     const computedStyle = window.getComputedStyle(animationElement);
     let width = Number(computedStyle.left.slice(0, computedStyle.left.length - 2)).toFixed(2);
+    console.log(width + " = width");
+    console.log(canvas.width + " = canvas width");
     width = canvas.width - width;
+    console.log(width + " = finalWidth");
+    if(width <= -1){
+      width = 1;
+      //cancelAnimationFrame(animationId);
+      //clearInterval(intervalId);
+    }
+    console.log(width + " = HÄH?");
     let scaledWidth = (width / canvas.width) >= 1 ? 1 : (width / canvas.width);
     scaledWidth = scaledWidth <= 0 ? 0.01 : scaledWidth; 
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     gradient = ctx.createLinearGradient(canvas.width, 0 , 0, 0 );
-    gradient.addColorStop(scaledWidth, "orangered");
-    gradient.addColorStop(scaledWidth, "orangered"); // End color (right)
+    gradient.addColorStop(scaledWidth, leRed);
+    gradient.addColorStop(scaledWidth, leRed); // End color (right)
     gradient.addColorStop(scaledWidth, leBlue);
     gradient.addColorStop(1, leBlue);
     ctx.fillStyle=gradient;
     ctx.strokeStyle=gradient;
+    console.log(scaledWidth);
     if(scaledWidth >= 0.95){ 
-      addedAnimations[id].done = true;
+      addedAnimations[id].done = false;
+      addedAnimations[id].ready = false;
       console.log("yup")
-      ctx.fillStyle="orangered";
-      ctx.strokeStyle= "orangered";
+      ctx.fillStyle= leRed;
+      ctx.strokeStyle= leRed;
       animationElement.style.animation = "";
+      animationElement.style.left = `${canvas.width}px`;
+      
       clearInterval(intervalId);
       cancelAnimationFrame(animationId)
     }
+    ctx.moveTo(0, canvas.height - 4);
+    ctx.lineTo(canvas.width,canvas.height - 4);
+    ctx.moveTo(0, canvas.height - 5);
+    ctx.lineTo(canvas.width,canvas.height - 5);
+    ctx.moveTo(0, canvas.height - 6);
+    ctx.lineTo(canvas.width,canvas.height - 6);
+    ctx.stroke();
+    ctx.fillText(`${dn}`,  0,canvas.height);
   }
-
-  ctx.moveTo(0, canvas.height - 4);
-  ctx.lineTo(canvas.width,canvas.height - 4);
-  ctx.moveTo(0, canvas.height - 5);
-  ctx.lineTo(canvas.width,canvas.height - 5);
-  ctx.moveTo(0, canvas.height - 6);
-  ctx.lineTo(canvas.width,canvas.height - 6);
-  ctx.stroke();
-  ctx.fillText(`${dn}`,  0,canvas.height);
 }
 

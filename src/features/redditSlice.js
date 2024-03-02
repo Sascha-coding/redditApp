@@ -143,7 +143,14 @@ const options = {
       state.closeAllComments = false;
     },
     setSearchTerm(state, action) {
-      state.searchTerm = action.payload;
+      const searchTerm = action.payload.searchTerm;
+      console.log(searchTerm);
+      if(action.payload === ""){
+        state.fittingPosts = [];
+        state.searchTerm = "";
+      }else{
+        state.searchTerm = action.payload;
+      } 
     },
     searchPosts(state, action) {
       const { searchTerm,subreddit } = action.payload;
