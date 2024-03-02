@@ -73,6 +73,10 @@ function Subreddits(props) {
                       className={style.textShadowWrapper + " " + subreddit.id}
                     ></canvas>
                   </div>
+                  <div className={style.beam + " " + style.beam3} id={"beam-" + subreddit.id+"-2"}>
+                    <div className={style.beamTop + " th"}></div>
+                    <div className={style.beamBot + " th"}></div>
+                  </div>
                 </div>
               <div className={style.lightContainer + " lc"}>
                 <div className={style.light3}></div>

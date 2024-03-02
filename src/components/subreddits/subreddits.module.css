@@ -279,7 +279,6 @@
     color:transparent;
 }
 .beam{
-    transition:left 0.4s ease-in-out;
     z-index:2;
     display:flex;
     flex-direction:row;
@@ -290,7 +289,6 @@
     width:5px;
     box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249), #0c098582 0 0 10px 3px;
     height:1px;
-    left:0px;
     top:1.5vh;
     background:var(--blingbling);
     opacity:0%;
@@ -317,6 +315,9 @@
     align-items:center;
     justify-content:center;
     opacity:0%
+}
+.beam3{
+    
 }
 .beamTop, .beamBot{
     position:absolute;
