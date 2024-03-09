@@ -17,6 +17,7 @@ import {
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Post from "../Posts/Post.js";
+import { getAllDataFromIDBCollection } from "../../features/savedPosts.js";
 
 function Reddit(props) {
   const dispatch = useDispatch();
@@ -24,31 +25,27 @@ function Reddit(props) {
   const isLoading = useSelector(isLoadingSelector);
   const initialPosts = useSelector(initialPostsSelector(prefix));
   const loadFromDb = useSelector(loadFromDbSelector);
-  const DBPosts = useSelector(postsSelector("DB"));
+  let DBPosts = useSelector(postsSelector("DB"));
   const posts = useSelector(postsSelector(prefix));
   const id = posts && posts.length > 0 ? posts[posts.length - 1].name : "";
   const fittingPosts = useSelector(fittingPostsSelector);
   const closeAllComments = useSelector(selectCloseAllComments);
   let [leIndex, setLeIndex] = useState(0);
   leIndex = leIndex ? leIndex : 0;
-  let [more, setMore] = useState(true);
 
   const allObservingArrayOfObservingObservers = []
   useEffect(() => {
+    if(!posts || posts.length === 0){
+      dispatch(postsThunk({prefix:prefix, posts:[]}));
+    }
     if(leIndex !== 0){
       setLeIndex(posts.length)
     }
     if (closeAllComments) {
       dispatch(toggleCloseAllComments({ value: false }));
     }
-    if (more){
-      dispatch(postsThunk({prefix:prefix, id:id, curPosts:posts}));
-      setMore(false)
-    }
-    if(loadFromDb){
-      dispatch(postsThunk({prefix:prefix, id:id, curPosts:posts}));
-    }
-  }, [prefix,posts,loadFromDb]);
+
+  }, [prefix,posts]);
   const handleMouseEnter = (element) => {
     leIndex = element
   }
@@ -95,8 +92,7 @@ function Reddit(props) {
     leIndex = fittingPosts.length > 0 ? fittingPosts.length - 1 : posts.length - 1;
   }
   const getMore = async(prefix,id,posts) => {
-     dispatch(postsThunk({prefix:prefix,id:id,curPosts:posts}));
-     setMore=>true;
+     dispatch(postsThunk({prefix:prefix,posts:posts, more:true}));
   }
 
   const timeOutArray = [];
@@ -107,10 +103,9 @@ function Reddit(props) {
     const timeOutId = setTimeout(() => {
       setLeIndex(captureId);
     }, 500)
-    timeOutArray.push(timeOutId)
+    timeOutArray.push(timeOutId);
   }
 
-  
   return (
     <>
       
@@ -121,22 +116,22 @@ function Reddit(props) {
             <h2 className={styles.subredditH2}>{prefix}</h2>
               {loadFromDb 
               ? DBPosts.map((post,index) => (
-                  <Post savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
+                  <Post subreddit={prefix} removePostFromDb = {props.removePostFromDb} loadFromDb = {loadFromDb} savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
               ))
               :
                 fittingPosts && fittingPosts !== "No posts found" && fittingPosts.length > 0 
               ?
                 fittingPosts && fittingPosts.map((post,index) => (
-                  <Post savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
+                  <Post subreddit={prefix} removePostFromDb = {props.removePostFromDb} loadFromDb = {loadFromDb} savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
                 ))
               : 
                 initialPosts && posts.length === 25 
               ? 
                 initialPosts.map((post,index) => (
-                  <Post savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
+                  <Post subreddit={prefix} removePostFromDb = {props.removePostFromDb} loadFromDb = {loadFromDb} savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
                 )) 
               : posts.map((post,index) => (
-                  <Post savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
+                  <Post subreddit={prefix} removePostFromDb = {props.removePostFromDb} loadFromDb = {loadFromDb} savePost={props.savePost} SetIndex = {SetIndex}  handleMouseEnter = {handleMouseEnter} setObserverCreated={setObserverCreated} allObservingArrayOfObservingObservers={allObservingArrayOfObservingObservers} posts={loadFromDb ? DBPosts : posts} post={post} id={index} key={post.id} permalink={post.permalink} />
                 ))}
                 {isLoading ?
                 <div className={styles.loadingContainer}>

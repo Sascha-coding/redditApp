@@ -11,7 +11,6 @@ function dateFormatter(date){
   const [datestr, time] = isoString.split("T");
   const [hours, minutes] = time.split(":");
   const formattedTime = `${hours}:${minutes.padStart(2, "0")}`;
-
   return [localeString, formattedTime];
 };
 

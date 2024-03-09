@@ -1,28 +1,30 @@
-const dbName = "savedPosts";
-const dbVersion = 1;
+const DatabaseName = "savedPosts";
+const DatabaseVersion = 1;
 
-let db; // Module-level variable to store the reference to the indexedDB database once opened
+export let Database; // Module-level variable to store the reference to the indexedDB database once opened
 export async function getDatabase() {
-  let Database = await initializeDatabase();
-  return db;
+  console.log("getDatabase");
+  Database = await initializeDatabase();
+  return Database;
 }
-  async function COS() {
-    const ObjectStore = db.createObjectStore("posts", { keyPath: "idDB", autoIncrement: true });
-    ObjectStore.createIndex("byId", "id", { unique: true });
-    ObjectStore.createIndex("bySubreddit", "subreddit", { unique: false });
-  }
+!Database ? getDatabase() : null ;
+async function COS() {
+  const ObjectStore = Database.createObjectStore("posts", { keyPath: "id", unique:true});
+  ObjectStore.createIndex("byId", "id", { unique: false });
+  ObjectStore.createIndex("bySubreddit", "subreddit", { unique: false });
+}
 let storeNames = ["posts"];
 async function initializeDatabase() {
   return new Promise((resolve, reject) => {
-    if (db) {
+    if (Database) {
       // If the database is already open, resolve with the database instance
-      resolve(db);
+      resolve(Database);
     } else {
       // If the database is not open, open it and resolve with the database instance
-      const request = indexedDB.open(dbName, dbVersion);
+      const request = indexedDB.open(DatabaseName, DatabaseVersion);
 
       request.onupgradeneeded = async (event) => {
-        db = event.target.result;
+        Database = event.target.result;
         await COS();
       };
 
@@ -31,18 +33,18 @@ async function initializeDatabase() {
       };
 
       request.onsuccess = (event) => {
-        db = event.target.result;
-        resolve(db);
+        Database = event.target.result;
+        resolve(Database);
       };
     }
   });
 }
 export async function addPostToIDBCollection(post, mode) {
+  post = { ...post, saved: true };
   try {
-    const transaction = db.transaction("posts", mode);
-    const objectStore = transaction.objectStore("posts");
-    const request = objectStore.put(post);
-    return request;
+    const transaction = await Database.transaction("posts", mode);
+    const objectStore = await transaction.objectStore("posts");
+    const request = await objectStore.put(post);
   }catch(error){
     console.log(error);
   }
@@ -50,7 +52,7 @@ export async function addPostToIDBCollection(post, mode) {
 export async function getAllDataFromIDBCollection(mode,key) {
   try {
     
-    const transaction = db.transaction("posts",mode);
+    const transaction = Database.transaction("posts",mode);
     const objectStore = transaction.objectStore("posts");
     const request = objectStore.getAll();
 
@@ -71,5 +73,23 @@ export async function getAllDataFromIDBCollection(mode,key) {
     });
   } catch (error) {
     console.error("Error fetching audio data from IndexedDB:", error);
+  }
+}
+
+export async function removePostFromIDBCollection(id) {
+  try {
+    const transaction = await Database.transaction("posts", "readwrite"); // Use readwrite mode for deletion
+    const objectStore = await transaction.objectStore("posts");
+    const request = await objectStore.delete(id); // Use ID for deletion
+    await transaction.complete;
+    request.onsuccess = (event) => {
+      console.log("Post successfully removed from IDB:", id);
+    };
+
+    request.onerror = (error) => {
+      console.error("Error removing post from IDB:", error);
+    };
+  } catch (error) {
+    console.error("Error during IDB deletion:", error);
   }
 }

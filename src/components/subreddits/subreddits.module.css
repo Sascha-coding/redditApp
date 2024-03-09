@@ -9,7 +9,8 @@
     padding: 0vh 0vw 0vh 0vw;
     padding-right:0%;
     height: 100%;
-    width: 25.6vw;
+    right: -0.6vw;
+    width: 26.2vw;
     grid-row:2;
     grid-column:2;  
     background:#2222227f; 
@@ -37,7 +38,13 @@
     background-color:#1F253D;
     justify-content: center;
 }
-
+.checkbox{
+    color: rgba(164, 216, 249, 0.6);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    position:relative;
+    right:1vw;
+    
+}
 .subredditsContainer{
     border:1px solid silver;
     display: grid;
@@ -134,7 +141,7 @@
     bottom:0px;
 }
 .light3, .light4{
-    
+    height:2px;
     opacity: 0;
     right: unset;
     width: 3px;
@@ -143,9 +150,10 @@
     top: calc(1.5vw - 2px);
     left: 0.45vw;
     z-index:1;
+    
 }
 .light4{
-    top: calc(1.5vw - 1px);
+    top: calc(1.5vw - 1.5px);
 }
 
 .subredditButton:hover > .imgWrapper > :first-child{
@@ -184,7 +192,7 @@
     width: 5vmin;
     border:1.5px solid rgba(255, 68, 0, 0.7);
     border-radius:50%;
-    box-shadow: 0px 0px 5px 0px rgb(164, 217, 249, 30%);
+    box-shadow: 0px 0px 5px 2px rgb(164, 217, 249, 30%);
     pointer-events:none;
 }
 
@@ -237,7 +245,6 @@
     display:grid;
     grid-template-rows: 100%;
     grid-template-columns: 100%;
-    top:1px;
     height:3vh;
     width:100%;
     pointer-events:none;
@@ -291,7 +298,7 @@
     align-content:space-between;
     justify-items:center;
     position:absolute;
-    width:5px;
+    width:7px;
     box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249), #0c098582 0 0 10px 3px;
     height:1px;
     top:1.5vh;
@@ -346,6 +353,14 @@
     background-color: rgb(164, 217, 249);
     border:white 1px solid;
     border-radius:50%;
+}
+.selectedSubreddit{
+    filter: brightness(1.2);
+    border: 2px solid rgba(164, 217, 249, 0.4);
+}
+.inactiveSubreddit{
+    filter:brightness(100%);
+    border: 2px solid rgba(255, 68, 0, 0.4)
 }
 @keyframes rotate1 {
     0%{

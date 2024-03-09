@@ -3,158 +3,147 @@ import {
   createSelector,
   createAsyncThunk,
 } from "@reduxjs/toolkit";
-import { getPosts, getComments } from "../api/snoowrap.js";
-import dateFormatter from "../functionality/dateFormatter.js";
+import { getPosts, getComments, sendVote } from "../api/snoowrap.js";
+import { listformatter } from "../functionality/listFormatter.js";
+//links im post selftext ändern;
 
-const fetchComments = (permalink, subreddit) => async (dispatch) => {
+const fetchComments = async (argObj) => {
+  const { id, permalink, subreddit } = argObj;
+  let commentsWithMetaData;
   try {
-    dispatch(startGetComments());
-    const comments = await getComments(permalink);
-    const more = comments.filter((comment) => comment.kind === "more");
-    comments.splice(comments.indexOf(more[0]), 1);
-    comments.map((comment) => {
-      const text = comment.body;
-      const regex =
-        /\b((?:https?\:\/\/|www\.)(?!(?:[\[\]\(\)]|\\[\\\/]))[^\s\[\]\(\)]+)\b/gi;
-      comment.body = text.replace(
-        regex,
-        " <a target='_blank' href='$1'>$1</a> "
-      );
-    });
-    dispatch(
-      getCommentsSuccess({
-        comments: comments,
-        permalink: permalink,
-        subreddit: subreddit,
-      })
-    );
+    const comments = await getComments(id);
+    commentsWithMetaData = await listformatter(comments, "comments");
   } catch (error) {
-    dispatch(getCommentsFailure());
-    console.log(error);
   }
+  return {
+    comments: commentsWithMetaData,
+    permalink: permalink,
+    subreddit: subreddit,
+  };
 };
+const commentsThunk = createAsyncThunk("reddit/commentsThunk", fetchComments);
 
 const fetchPosts = async (argObj) => {
-  const { prefix, id, curPosts } = argObj;
-    let count = 0;
-    if (curPosts && curPosts.length > 0) {
-      count = curPosts.length;
+  try {
+    const { prefix, posts, more } = argObj;
+    if(prefix === "DB" || prefix === "DBPosts"){
+      return; 
     }
 
-    const result = await getPosts(prefix, id, count)
-    const postsWithMetaData = curPosts ? [...curPosts] : [];
-    for (let post of result) {
-      const dateTime = dateFormatter(post.created * 1000);
+    let result = await getPosts(prefix, posts, more,);
 
-      postsWithMetaData.push({
-        ...post,
-        comments: [],
-        showingComments: false,
-        loadingComments: false,
-        errorComments: false,
-        date: dateTime[0],
-        time: dateTime[1],
-      });
+    let startIndex, endIndex;
+    if (more === true) {
+      startIndex = posts.list.length;
+      endIndex = result.length;
+    } else {
+      startIndex = 0;
+      endIndex = result.length;
+      posts["list"] = result;
     }
-
-    return {posts:postsWithMetaData, prefix:prefix};
+    const postsWithAddedList = await listformatter(
+      result,
+      "posts",
+      startIndex,
+      endIndex,
+      posts
+    );
+    let finalPosts = posts ? [...posts] : [];
+    finalPosts.splice(finalPosts.length, 1);
+    finalPosts = finalPosts.concat(postsWithAddedList);
+    return { posts: finalPosts, prefix: prefix, list: result };
+  } catch (error) {
+    console.log(error);
+  }
+ 
 };
 
 const postsThunk = createAsyncThunk("reddit/postsThunk", fetchPosts);
 
+const updateThing = async (argObj) => {
+  const { postId, vote, type, thing, subreddit, commentId } = argObj;
+  const prevVotes = thing.ups;
+  const prevLikes = thing.likes;
+  const id = commentId !== undefined ? commentId : postId;
+  const result = await sendVote(id, vote, type, thing);
+  return {
+    thing: result,
+    subreddit: subreddit,
+    postId: postId,
+    commentId: commentI
+  };
+};
+const updatePostThunk = createAsyncThunk("reddit/updatePostThunk", updateThing);
+const updateCommentThunk = createAsyncThunk(
+  "reddit/updateCommentThunk",
+  updateThing
+);
 const options = {
   name: "reddit",
   initialState: {
-    selectedSubreddit: "/r/pics",
+    selectedSubreddit: "r/worldnews",
     searchTerm: "",
     posts: {
-        '/r/pics': [],
+      "r/worldnews": [],
     },
     initialPosts: {
-        '/r/pics': [],
+      "r/worldnews": [],
     },
     fittingPosts: [],
     DBPosts: [],
-    comments: [],
     isLoading: false,
     error: false,
     commentsIsLoading: false,
     commentsError: false,
     closeAllComments: false,
     after: "",
-    loadFromDb:false,
+    loadFromDb: false,
   },
   reducers: {
     setSelectedSubreddit(state, action) {
-      state.selectedSubreddit = action.payload;
+      state.selectedSubreddit = action.payload.value;
       state.searchTerm = "";
       state.loadFromDb = false;
     },
-    initializeState(state,action) {
-        const subreddits = action.payload;
-        subreddits.map((subreddit) => {
-            state.posts[subreddit.display_name_prefixed] = [];
-            state.initialPosts[subreddit.display_name_prefixed] = [];
-        })
-        state.posts["DBPosts"] = [];
-        state.initialPosts["DBPosts"] = [];
-    },
-    startGetComments(state) {
-      state.commentsIsLoading = true;
-      state.commentsError = false;
-    },
-    getCommentsSuccess(state, action) {
-      const { comments, permalink, post, subreddit } = action.payload;
-      let index = 0;
-
-      comments.forEach((comment) => {
-        const dateTime = dateFormatter(comment.created * 1000);
-        comment.date = dateTime[0];
-        comment.time = dateTime[1];
+    initializeState(state, action) {
+      const subreddits = action.payload;
+      subreddits.map((subreddit) => {
+        state.posts[subreddit.display_name_prefixed] = [];
+        state.initialPosts[subreddit.display_name_prefixed] = [];
       });
-      for (let post of state.posts[subreddit]) {
-        if (post.permalink === permalink) {
-          break;
-        }
-        index++;
-      }
-      state.comments = comments;
-      state.posts[subreddit][index].comments = comments;
-      state.posts[subreddit][index].showingComments = true;
-      state.commentsIsLoading = false;
-      state.commentsError = false;
+      state.posts["DBPosts"] = [];
+      state.initialPosts["DBPosts"] = [];
     },
-    getCommentsFailure(state) {
-      state.commentsIsLoading = false;
-      state.commentsError = true;
-    },
+
     setShowCommentsForPost(state, action) {
-      const { posts, permalink, value, subreddit } = action.payload;
-      const post = posts.filter((post) => post.permalink === permalink)[0];
-      posts.map((entry,index) => { entry.permalink === post.permalink ?  state.posts[subreddit][index].showingComments = value : null;})
+      const { permalink, value, subreddit } = action.payload;
+      state.posts[subreddit].map((entry, index) => {
+        entry.permalink === permalink
+          ? (state.posts[subreddit][index].showingComments = value)
+          : null;
+      });
     },
     toggleCloseAllComments(state) {
-      const keys = Object.keys(state.posts)
-      keys.map((key) => {
-        state.posts[key].map((post,index) => {
+      const keys = Object.keys(state.posts);
+      keys ? keys.map((key) => {
+        key !== null ? state.posts[key].map((post, index) => {
           state.posts[key][index].showingComments = false;
-        })
-      });
+        }):null;
+      }):null;
       state.closeAllComments = false;
     },
     setSearchTerm(state, action) {
       const searchTerm = action.payload.searchTerm;
-      console.log(searchTerm);
-      if(action.payload === ""){
+      if (action.payload === "") {
         state.fittingPosts = [];
         state.searchTerm = "";
-      }else{
+      } else {
         state.searchTerm = action.payload;
-      } 
+      }
     },
     searchPosts(state, action) {
-      const { searchTerm,subreddit } = action.payload;
-      if(subreddit === "returnToInitialqxyyyzq"){
+      const { searchTerm, subreddit } = action.payload;
+      if (subreddit === "returnToInitialqxyyyzq") {
         state.fittingPosts = [];
         return;
       }
@@ -175,37 +164,48 @@ const options = {
         }
       });
       state.posts[subreddit].map((post, index) => {
-        if (post.title.includes(searchTerm) && foundPosts.filter((fittingPost) => fittingPost.id === post.id).length === 0) {
+        if (
+          post.title.includes(searchTerm) &&
+          foundPosts.filter((fittingPost) => fittingPost.id === post.id)
+            .length === 0
+        ) {
           foundPosts.push(post);
         }
       });
-      if(foundPosts.length === 0){
+      if (foundPosts.length === 0) {
         state.fittingPosts = "No posts found";
-      }else{
+      } else {
         state.fittingPosts = foundPosts;
       }
       state.searchTerm = "";
     },
-    setPosts(state, action) {
+    setPostsToDB(state, action) {
       const { posts } = action.payload;
       state.posts["DB"] = posts;
-      state.initialPosts = [];
-      state.selectedSubreddit = "DB";
       state.loadFromDb = true;
     },
+    setPostSaved(state, action) {
+      const { id, subreddit, saved } = action.payload;
+      state.DBPosts = state.DBPosts.filter((post) => post.id !== id);
+      state.posts[subreddit].map((post, index) => {
+        if (post.id === id) {
+          state.posts[subreddit][index].saved = saved;
+        }
+      });
+    },
   },
-  
+
   extraReducers: (builder) => {
     builder
       .addCase(postsThunk.fulfilled, (state, action) => {
-        const {posts,prefix} = action.payload;
-        const after = posts[posts.length - 1].name; 
+        const posts = action.payload ? action.payload.posts : null;
+        const prefix = action.payload ? action.payload.prefix : null;
+        const list = action.payload ? action.payload.list : null;
         state.posts[prefix] = posts;
         state.isLoading = false;
         state.error = false;
         state.fittingPosts = [];
         state.searchTerm = "";
-        state.after = after;
         state.loadFromDb = false;
       })
       .addCase(postsThunk.rejected, (state) => {
@@ -216,26 +216,78 @@ const options = {
         state.isLoading = true;
         state.error = false;
       });
+    builder
+      .addCase(updatePostThunk.fulfilled, (state, action) => {
+        const { thing, subreddit, postId } = action.payload;
+        state.posts[subreddit].map((entry, index) => {
+          if (entry.id === postId) {
+            state.posts[subreddit][index] = thing;
+          }
+        });
+      })
+      .addCase(updatePostThunk.rejected, (state) => {
+        //error handling
+      });
+    builder
+      .addCase(commentsThunk.pending, (state) => {
+        state.commentsIsLoading = true;
+        state.commentsError = false;
+      })
+      .addCase(commentsThunk.fulfilled, (state, action) => {
+        const { comments, permalink, subreddit } = action.payload;
+        let index = 0;
+        for (let post of state.posts[subreddit]) {
+          if (post.permalink === permalink) {
+            break;
+          }
+          index++;
+        }
+        state.posts[subreddit][index].comments = comments;
+        state.posts[subreddit][index].showingComments = true;
+        state.commentsIsLoading = false;
+        state.commentsError = false;
+      })
+      .addCase(commentsThunk.rejected, (state) => {
+        state.commentsIsLoading = false;
+        state.commentsError = true;
+      });
+    builder.addCase(updateCommentThunk.fulfilled, (state, action) => {
+      const { thing, subreddit, postId, commentId } = action.payload;
+      state.posts[subreddit].map((entry1, index1) => {
+        if (entry1.id === postId) {
+          state.posts[subreddit][index1].comments.map((entry2, index2) => {
+            if (entry2.id === commentId) {
+              state.posts[subreddit][index1].comments[index2] = thing;
+            }
+          });
+        }
+      });
+    });
   },
 };
 
 const selectedSubreddit = (state) => state.reddit.selectedSubreddit;
 const posts = (subreddit) => (state) => {
-    let posts = state.reddit.posts[subreddit];
-    return posts;
+  let posts = state.reddit.posts[subreddit];
+  return posts;
+};
+const post = (subreddit, id) => (state) => {
+  let post = state.reddit.posts[subreddit].filter((post) => post.id === id)[0];
+  return post;
 };
 const comments = (state) => state.reddit.comments;
 const commentsAreLoading = (state) => state.reddit.commentsIsLoading;
 const closeAllComments = (state) => state.reddit.closeAllComments;
 const fittingPosts = (state) => state.reddit.fittingPosts;
 const initialPosts = (subreddit) => (state) => {
-    let posts = state.reddit.posts[subreddit];
-    return posts;
-}
+  let posts = state.reddit.posts[subreddit];
+  return posts;
+};
 const isLoading = (state) => state.reddit.isLoading;
 const getAfter = (state) => (state.after ? state.reddit.after : null);
 const loadFromDb = (state) => state.reddit.loadFromDb;
 const postsSelector = createSelector(posts, (posts) => posts);
+const postSelector = createSelector(post, (post) => post);
 const subredditSelector = createSelector(
   selectedSubreddit,
   (selectedSubreddit) => selectedSubreddit
@@ -256,10 +308,13 @@ const fittingPostsSelector = createSelector(
 const loadFromDbSelector = createSelector(
   loadFromDb,
   (loadFromDb) => loadFromDb
-)
+);
 const isLoadingSelector = createSelector(isLoading, (isLoading) => isLoading);
 const afterSelector = createSelector(getAfter, (getAfter) => getAfter);
-const initialPostsSelector = createSelector(initialPosts, (initialPosts) => initialPosts);
+const initialPostsSelector = createSelector(
+  initialPosts,
+  (initialPosts) => initialPosts
+);
 const redditSlice = createSlice(options);
 
 export {
@@ -269,15 +324,19 @@ export {
   fittingPostsSelector,
   selectCloseAllComments,
   postsSelector,
+  postSelector,
   subredditSelector,
   commentsSelector,
   initialPostsSelector,
   commentsState,
   postsThunk,
-  fetchComments,
+  updatePostThunk,
+  updateCommentThunk,
+  commentsThunk,
 };
 export const {
-  setPosts,
+  setPostsToDB,
+  setPostSaved,
   initializeState,
   toggleisLoading,
   searchPosts,
@@ -285,6 +344,7 @@ export const {
   toggleCloseAllComments,
   setShowCommentsForPost,
   removeComments,
+  removedPostFromDb,
   setSelectedSubreddit,
   startGetComments,
   getCommentsSuccess,

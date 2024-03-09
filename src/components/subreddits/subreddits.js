@@ -1,38 +1,43 @@
 import { useSelector, useDispatch } from "react-redux";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   selectSubReddits,
 } from "../../features/subredditsSlice";
 import style from "./subreddits.module.css";
-
+import { AddAnimations1, AddAnimations2, animate } from "../../functionality/subreditsAnimations";
 import {
   setSelectedSubreddit,
   toggleCloseAllComments,
   postsThunk,
+  subredditSelector,
+  loadFromDbSelector,
 } from "../../features/redditSlice";
 
 function Subreddits(props) {
   const dispatch = useDispatch();
+  const selectedSubreddit =useSelector(subredditSelector)
   const subreddits = useSelector(selectSubReddits);
-  const [stateLoaded, setStateLoaded] = useState(false);
-
+  const loadFromDb = useSelector(loadFromDbSelector);
+  useEffect(() => {
+    
+    AddAnimations1();
+    AddAnimations2();
+    animate(subreddits);
+    
+  },[subreddits])
   const loadSubreddit = async (subreddit) => {
     let audio = document.getElementById("audio2");
     audio.currentTime = 0;
     audio.play()
+    dispatch(setSelectedSubreddit({ value: subreddit.display_name_prefixed}));
     dispatch(toggleCloseAllComments({ value: true }));
-    dispatch(setSelectedSubreddit(subreddit.display_name_prefixed));
-    dispatch(
-      postsThunk({
-        prefix: subreddit.display_name_prefixed,
-        id: "",
-        curPosts: [],
-      })
-    );
+    dispatch(postsThunk({prefix:subreddit.display_name_prefixed,posts:[], more:false}));
   };
+
   return (
     <aside className={style.subreddits}>
       <h1 className={style.subredditsh1}>Subreddits</h1>
+     
       <div className={style.subredditsContainer}>
         {subreddits.map((subreddit) => (
           <div className={style.subreddit} key={subreddit.id}>
@@ -40,7 +45,7 @@ function Subreddits(props) {
               id={subreddit.id}
               onClick={(e) => loadSubreddit(subreddit)}
               
-              className={style.subredditButton}
+              className={style.subredditButton  + " " + (selectedSubreddit === subreddit.display_name_prefixed ? style.selectedSubreddit : style.inactiveSubreddit)}
             >
               <div className={style.imgWrapper}>
                 <div className={style.beam2}>
@@ -50,10 +55,7 @@ function Subreddits(props) {
 
                 <img
                   className={style.subredditImg}
-                  src={
-                    subreddit.icon_img ||
-                    `https://api.adorable.io/avatars/25/${subreddit.display_name}`
-                  }
+                  src={subreddit.icon_image}
                 />
               </div>
               <div className={style.lightContainer2}>
@@ -83,6 +85,7 @@ function Subreddits(props) {
                 <hr
                   className={style.subredditHr + " " + style.subredditHr2}
                 ></hr>
+                <button></button>
               </div>
               
             </button>

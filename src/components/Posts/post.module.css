@@ -44,6 +44,8 @@
 .imgContainer{
     order:2;
     width: fit-content;
+    min-height:fit-content;
+    max-height:60vh;
     display: flex;
     flex-direction: column;
     align-items:center;
@@ -51,13 +53,15 @@
 }
 .postImg, .postVid{
     height: fit-content;
-    max-height:77vh;
+    max-height:52vh;
     min-height:3vh;
     max-width:54vw;
     margin-bottom:1vh;
 }
 .postVid{
     width: fit-content;
+    min-width:50vw;
+    min-height:52vh;
   }
 .postInfo{
     order:3;
@@ -67,6 +71,7 @@
     flex-direction: row;
     justify-content:space-between;
     align-items:center;
+    padding:0vh 1vw 0vh 1vw;
 }
 .postAuthor{
     height:100%;
@@ -119,12 +124,33 @@
 .selfText{
     width: 100%;
     max-width:100%;
-    word-break:break-all;
+    word-break:break-word;
     height: fit-content;
+    min-height:3vh;
+    max-height:55vh;
     font-size: 2.2rem;
     text-align:start;
     color:rgba(195, 231, 253, 0.724);
     padding-bottom:2vh;
+    overflow:auto;
+    margin-bottom:1vh;
+    padding:0vh 1vw 0vh 1vw;
+}
+.selfText::-webkit-scrollbar{
+    opacity:1;
+}
+.selfText::-webkit-scrollbar-button{
+    
+    height: 3.6vh;
+}
+.selfText::-webkit-scrollbar-track-piece{
+    background-color:rgba(255, 68, 0, 0.7);
+}
+.selfText::-webkit-scrollbar-thumb{
+    border-radius:25%;
+    width:10px;
+    background-color:#1F253D;
+    border:1px solid var(--blingbling);
 }
 .HR{
     order:3;
@@ -172,7 +198,7 @@
     height: 5vh;
     font-size: 2.2rem;
     text-align:center;
-    color: rgba(255, 68, 0, 0.7);;
+    color: rgba(255, 68, 0, 0.7);
     justify-self:center;
     background-color:#ffffff05;
     border:1px solid rgba(255, 68, 0, 0.7);
@@ -182,8 +208,9 @@
 .openComments:first-of-type{
     margin-left:0vw;
 }
-.openCommentsContainer:hover{
-    filter:brightness(120%)
+.openComments:hover{
+    color:var(--blingbling);
+    filter:brightness(110%);
 }
 .commentList{
     grid-row:2;
@@ -250,4 +277,14 @@
     align-self:center;
     position:relative;
 
+}
+
+.embed{
+    width: 100%;
+    min-width:50vw;
+    height: 100%;
+    min-height:50vh;
+    border: 1px solid rgba(255, 68, 0, 0.7);
+    outline: 1px solid rgba(255, 68, 0, 0.7);
+    margin-bottom:1vh;
 }
