@@ -3,7 +3,6 @@ import styles from "./post.module.css";
 import { UpVote, DownVote } from "./Vote/vote.js";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  removedPostFromDb,
   postSelector,
   commentsState,
   setShowCommentsForPost,
@@ -18,9 +17,11 @@ import { Comment } from "./Comment/comment.js";
 function Post(props) {
   const [buttonText, setButtonText] = useState("Show");
   const selectedSubreddit = useSelector(subredditSelector);
-  let post = useSelector(postSelector(selectedSubreddit, props.post.id));
+  let post = props.type !== "randomPost" ? useSelector(postSelector(selectedSubreddit, props.post.id)) : props.post
   //let [post, setPost] = useState(posts.filter((post) => post.permalink === props.permalink)[0]);
   let promise = false;
+  let type = props.type
+
   const loading = useSelector(commentsState);
   const dispatch = useDispatch();
   const [observerCreated, setObserverCreated] = useState(false);
@@ -28,6 +29,7 @@ function Post(props) {
   const [playerInitiated, setPlayerInitiated] = useState(false);
 
   useEffect(() => {
+    if(props.type !== "randomPost"){
     const found = props.allObservingArrayOfObservingObservers.filter(
       (observer) => observer.id === props.id
     );
@@ -48,8 +50,7 @@ function Post(props) {
     } else {
       props.setObserverCreated(true);
     }
-    if(post.domain !== "i.redd.it", post.domain !== "v.redd.it"){
-    }
+  }
   }, [post]);
 
   function calculateThreshold(offsetHeight) {
@@ -117,14 +118,13 @@ function Post(props) {
     await props.removePostFromDb(post.id,props.subreddit);
     props.loadFromDb ? setPostIsDeleted(true) : null;
   }
-  
   return (
     
     !postIsDeleted ?  
     <>
       <div
-        className={styles.post + " " + selectedSubreddit + " postElement"}
-        onMouseOver={(e) => props.handleMouseEnter(props.id)}
+        className={props.types === "randomPost" ? styles.post + " " + selectedSubreddit + " postElementRandom"  : styles.post + " " + selectedSubreddit + " postElement"}
+        onMouseOver={props.type !== "randomPost" ? (e) => props.handleMouseEnter(props.id) : null}
         id={post.id+ "-postElement"}
       >
         <div id={props.id} className={styles.postContainer}>

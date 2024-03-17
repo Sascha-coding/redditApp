@@ -3,9 +3,37 @@ import {
   createSelector,
   createAsyncThunk,
 } from "@reduxjs/toolkit";
-import { getPosts, getComments, sendVote } from "../api/snoowrap.js";
+import {
+  getPosts,
+  getComments,
+  sendVote,
+  getRandomSubmissions,
+} from "../api/snoowrap.js";
 import { listformatter } from "../functionality/listFormatter.js";
-//links im post selftext ändern;
+
+const fetchRandomPosts = async (argsObj) => {
+  let { posts, init } = argsObj;
+  let response;
+  try {
+    if (init) {
+      response = await getRandomSubmissions([], init);
+      const result = await listformatter([response], "posts", 0, 1);
+      return { rndPosts: result };
+    } else {
+      let newPosts = [...posts];
+      response = await getRandomSubmissions(posts.length, init);
+      let result = await listformatter(response, "posts", 0, 25 - posts.length);
+      result = newPosts.concat(result);
+      return { rndPosts: result };
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+const randomPostsThunk = createAsyncThunk(
+  "reddit/randomPostsThunk",
+  fetchRandomPosts
+);
 
 const fetchComments = async (argObj) => {
   const { id, permalink, subreddit } = argObj;
@@ -13,8 +41,7 @@ const fetchComments = async (argObj) => {
   try {
     const comments = await getComments(id);
     commentsWithMetaData = await listformatter(comments, "comments");
-  } catch (error) {
-  }
+  } catch (error) {}
   return {
     comments: commentsWithMetaData,
     permalink: permalink,
@@ -26,11 +53,11 @@ const commentsThunk = createAsyncThunk("reddit/commentsThunk", fetchComments);
 const fetchPosts = async (argObj) => {
   try {
     const { prefix, posts, more } = argObj;
-    if(prefix === "DB" || prefix === "DBPosts"){
-      return; 
+    if (prefix === "DB" || prefix === "DBPosts") {
+      return;
     }
 
-    let result = await getPosts(prefix, posts, more,);
+    let result = await getPosts(prefix, posts, more);
 
     let startIndex, endIndex;
     if (more === true) {
@@ -55,22 +82,19 @@ const fetchPosts = async (argObj) => {
   } catch (error) {
     console.log(error);
   }
- 
 };
 
 const postsThunk = createAsyncThunk("reddit/postsThunk", fetchPosts);
 
 const updateThing = async (argObj) => {
   const { postId, vote, type, thing, subreddit, commentId } = argObj;
-  const prevVotes = thing.ups;
-  const prevLikes = thing.likes;
   const id = commentId !== undefined ? commentId : postId;
   const result = await sendVote(id, vote, type, thing);
   return {
     thing: result,
     subreddit: subreddit,
     postId: postId,
-    commentId: commentI
+    commentId: commentId,
   };
 };
 const updatePostThunk = createAsyncThunk("reddit/updatePostThunk", updateThing);
@@ -79,27 +103,31 @@ const updateCommentThunk = createAsyncThunk(
   updateThing
 );
 const options = {
-  name: "reddit",
-  initialState: {
-    selectedSubreddit: "r/worldnews",
-    searchTerm: "",
-    posts: {
-      "r/worldnews": [],
+  name: "reddit",                           // Name of the Redux slice
+  initialState: {                           // Initial state object
+    selectedSubreddit: "/r/Home",           // Current selected subreddit
+    searchTerm: "",                         // Search term
+    posts: {                                // Object containing posts for each subreddit
+      "/r/Home": [],                        // Initial posts for the "/r/Home" subreddit
     },
-    initialPosts: {
-      "r/worldnews": [],
+    initialPosts: {                         // Object containing initial posts for each subreddit
+      "/r/Home": [],                        // Initial posts for the "/r/Home" subreddit
     },
-    fittingPosts: [],
-    DBPosts: [],
-    isLoading: false,
-    error: false,
-    commentsIsLoading: false,
-    commentsError: false,
-    closeAllComments: false,
-    after: "",
-    loadFromDb: false,
+    randomPosts: [],                        // Array for random posts
+    fittingPosts: [],                       // Array for fitting posts
+    DBPosts: [],                            // Array for indexDB posts
+    isLoading: false,                       // Loading state indicator
+    error: false,                           // Error state indicator
+    commentsIsLoading: false,               // Loading state indicator for comments
+    commentsError: false,                   // Error state indicator for comments
+    closeAllComments: false,                // Indicator to close all comments
+    loadFromDb: false,                      // Indicator to load posts from database
   },
   reducers: {
+    setInitialSubreddit(state, action) {
+      const { initialSubreddit } = action.payload;
+      state.selectedSubreddit = initialSubreddit;
+    },
     setSelectedSubreddit(state, action) {
       state.selectedSubreddit = action.payload.value;
       state.searchTerm = "";
@@ -107,6 +135,7 @@ const options = {
     },
     initializeState(state, action) {
       const subreddits = action.payload;
+      state.selectedSubreddit = subreddits[0].display_name_prefixed;
       subreddits.map((subreddit) => {
         state.posts[subreddit.display_name_prefixed] = [];
         state.initialPosts[subreddit.display_name_prefixed] = [];
@@ -125,11 +154,15 @@ const options = {
     },
     toggleCloseAllComments(state) {
       const keys = Object.keys(state.posts);
-      keys ? keys.map((key) => {
-        key !== null ? state.posts[key].map((post, index) => {
-          state.posts[key][index].showingComments = false;
-        }):null;
-      }):null;
+      keys
+        ? keys.map((key) => {
+            state.posts[key] !== null
+              ? state.posts[key].map((post, index) => {
+                  state.posts[key][index].showingComments = false;
+                })
+              : null;
+          })
+        : null;
       state.closeAllComments = false;
     },
     setSearchTerm(state, action) {
@@ -192,6 +225,13 @@ const options = {
           state.posts[subreddit][index].saved = saved;
         }
       });
+    },
+    loadingUpdate(state) {
+      state.isLoading = !state.isLoading;
+    },
+    removeFirstRndPost(state) {
+      state.randomPosts.shift();
+      console.log("state.randomPosts after shift()", state.randomPosts);
     },
   },
 
@@ -263,6 +303,10 @@ const options = {
         }
       });
     });
+    builder.addCase(randomPostsThunk.fulfilled, (state, action) => {
+      const { rndPosts } = action.payload;
+      state.randomPosts = rndPosts;
+    });
   },
 };
 
@@ -284,8 +328,8 @@ const initialPosts = (subreddit) => (state) => {
   return posts;
 };
 const isLoading = (state) => state.reddit.isLoading;
-const getAfter = (state) => (state.after ? state.reddit.after : null);
 const loadFromDb = (state) => state.reddit.loadFromDb;
+const randomPosts = (state) => state.reddit.randomPosts;
 const postsSelector = createSelector(posts, (posts) => posts);
 const postSelector = createSelector(post, (post) => post);
 const subredditSelector = createSelector(
@@ -310,16 +354,19 @@ const loadFromDbSelector = createSelector(
   (loadFromDb) => loadFromDb
 );
 const isLoadingSelector = createSelector(isLoading, (isLoading) => isLoading);
-const afterSelector = createSelector(getAfter, (getAfter) => getAfter);
 const initialPostsSelector = createSelector(
   initialPosts,
   (initialPosts) => initialPosts
 );
-const redditSlice = createSlice(options);
+const randomPostsSelector = createSelector(
+  randomPosts,
+  (randomPosts) => randomPosts
+);
 
+const redditSlice = createSlice(options);
 export {
+  randomPostsSelector,
   loadFromDbSelector,
-  afterSelector,
   isLoadingSelector,
   fittingPostsSelector,
   selectCloseAllComments,
@@ -330,6 +377,7 @@ export {
   initialPostsSelector,
   commentsState,
   postsThunk,
+  randomPostsThunk,
   updatePostThunk,
   updateCommentThunk,
   commentsThunk,
@@ -349,6 +397,8 @@ export const {
   startGetComments,
   getCommentsSuccess,
   getCommentsFailure,
+  loadingUpdate,
+  removeFirstRndPost,
 } = redditSlice.actions;
 export default redditSlice;
 

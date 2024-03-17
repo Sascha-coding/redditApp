@@ -1,0 +1,85 @@
+im writing a search function in a javascribt component,
+
+Needed Variables : 
+const [page, setPage] = useState(0); // the currently opened Page.
+const [pages, setPages] = useState([]); // the array that represents the pages with results.
+const subredditList = useSelector(subredditsListSelector); // the fetched Subreddits
+const [startIndex, setStartIndex] = useState(0)
+const subreddits = useSelector(selectSubReddits); // the already Subscribed subreddits
+const [filteredSubreddits, setFilteredSubreddits] = useState([]); // the fetched Subreddits but with the already subscribed subreddits filtered out.
+const [query, setQuery] = useState(""); // the Query that the user entered.
+const [display, setDisplay] = useState("Browse"); // the currently viewed list (either subscribed, or unsubscribed subreddits)
+const [searchResult, setSearchResult] = useState([]); // the if display = "Browse" filteredSubreddits with the query applied to .display_name and .description.
+
+on Initial Load:
+subreddits and subredditList get fetched.
+then the SubredditList has to be filtered , so that it wont show any subreddits, which are also within the "subreddits" array and the result saved into filteredSubreddits.
+then the startIndex gets incremented by 100;
+the pages Array gets generated, representing the different pages with results from the filteredSubreddits Array.
+which data structure looks as following:
+pages = [
+	page 1 = [
+		entry 1.
+		entry 2,
+		entry ...,
+	]
+	page 2 = [
+		entry 1,
+		entry 2,
+		entry ...
+	]
+	page... = [
+		...
+	]
+]
+_____________________________________________________________________________________________________________________________________
+there are 2 types of display
+"Browse" which shows Subreddits that are notsubscribed,
+and "Search" which shows only subscribed subreddits
+▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+on displayChange:
+the pages Array can be wiped "setPages([])"
+if there is a searchQuery currently running and the user changes display, the searchTerm has to be set to "" and searchResults to an empty Array []
+depending on the now selected Display the pages Array has to be rebuild
+if Display === "Saved" => use subreddits.	
+if Display === "Browse => use filteredSubreddits.
+
+_____________________________________________________________________________________________________________________________________
+onChange(change of query)
+when the user writes something into the search input, the input triggers an onChange eventHandler,
+the available Results (either browse or saved) then get filtered by their .description and .display_name propertys for the searchTerm.
+▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+the current pages Array has to be filtered if the property "description" or the property "display_name" includes the query.
+then the resulting Array has to be rearanged, as some nested Arrays wont have 10 entrys anymore.
+newPages = [...pages]
+newPagesFlat = newPages.flat();
+newPages = []
+displayPage = []
+for (let entry of newPagesFlat)
+	displayPage.push(entry)
+	if(page.length === 10){
+		newPages.push(displayPage);
+		displayPage = [];
+	}
+the Page the user is currently on, has to stay the same, if the search results would display less pages, than the currently opened one , the page shall be lowered to 
+the last page that was generated displaying search Results (setPage(index)).
+_____________________________________________________________________________________________________________________________________
+display === browse , loadMore()
+additional 100 subreddits get fetched. and added to subredditList.
+▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+the Page the user is currently on, has to stay the same
+the subredditList starting at the startIndex gets filtered so that there arraye no entrys also represent within the subreddit Array.
+if query === "" => the remaining entrys have to be concated into the filteredSubreddits Array.
+if query !== "" => the remaining entrys have to be concated into the filtered subreddits Array,
+				   the remaining entrys have to be filtered if the property "description" or the property "display_name" includes the query and the result has to be concated into searchResult.
+_____________________________________________________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+

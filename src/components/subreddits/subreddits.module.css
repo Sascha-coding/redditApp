@@ -19,7 +19,7 @@
 }
 
 .subredditsh1{
-    color: rgb(164, 217, 249);
+    color: #a4d9f9;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: bold;
     font-style: italic;
@@ -39,7 +39,7 @@
     justify-content: center;
 }
 .checkbox{
-    color: rgba(164, 216, 249, 0.6);
+    color: #a4d8f999;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     position:relative;
     right:1vw;
@@ -125,7 +125,7 @@
     height:1px;
     width:2px;
     background:var(--blingbling);
-    box-shadow: 0.5px 0.5px 10px 0.5px rgb(164, 217, 249);
+    box-shadow: 0.5px 0.5px 10px 0.5px #a4d9f9;
     pointer-events:none;
     border:1px solid white;
     border-radius:50%;

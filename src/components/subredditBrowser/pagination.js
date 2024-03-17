@@ -11,14 +11,12 @@ import styles from './subredditBrowser.module.css';
         generateButtons();
     },[props.page, props.pages]);
     const generateButtons = () => {
-        console.log("pages",pages);
 
         let page = props.page;
         if(page < 0){
             page = 0;
         }
 
-        console.log("page "+page);
         let newButtonList = [];
         let min = Math.max(0, page - 5);
         let max = min + 9;
@@ -38,8 +36,6 @@ import styles from './subredditBrowser.module.css';
             min = 0;
             max = 0;
         }
-        console.log("min = "+min);
-        console.log("max = "+max);
 
         for(let i = min; i <= max; i++){
 
@@ -73,6 +69,7 @@ import styles from './subredditBrowser.module.css';
         }
         setButtonList(newButtonList);
     }
+    console.log(props.page);
 	return (
 	  <>
         {buttonList.map(button => button)}

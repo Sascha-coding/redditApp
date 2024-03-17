@@ -102,7 +102,6 @@ export const AddAnimations1 = () => {
     let intervalId, timeOutId;
     const mouseEnter = (buttonId) => {
       clearTimeout(timeOutId);
-      console.log("mouseEnterTriggered")
       timeOutId = setTimeout(() => {
         clearTimeout(timeOutId);
         addedAnimations[buttonId].done = false;
@@ -323,7 +322,6 @@ export const changeTextColor = (id, intervalId, phase, ready) => {
     ctx.strokeStyle = gradient;
     if (scaledWidth === 1) {
       clearInterval(intervalId);
-      console.log(addedAnimations[id].lastIntervalId);
       addedAnimations[id].lastIntervalId.forEach((id) => {
         clearInterval(id);
       })

@@ -6,8 +6,8 @@ import {
 } from "../features/savedPosts.js";
 
 export const listformatter = async (list, type, startIndex, endIndex,prevPosts) => {
-
   const listWithMetaData = [];
+  console.log("list in listFormatter", list)
   if (type === "comments") {
     for (let comment of list) {
       if (!comment.subreddit_id) {
@@ -31,10 +31,10 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
   } else if (type === "posts") {
     const savedPosts = await getAllDataFromIDBCollection();
     for (let i = startIndex; i < endIndex; i++) {
-      
-      
+      try{
       let post = list[i];
-      let duplicate = prevPosts.find((entry) => entry.id === post.id)
+      console.log("post in listFormatter", post);
+      let duplicate = prevPosts?.find((entry) => entry.id === post.id)
       if(duplicate){
         continue;
       }
@@ -65,7 +65,7 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
       }else{
         media = null;
       }
-
+      
       listWithMetaData.push({
         id: post.id,
         name: post.name,
@@ -90,14 +90,16 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
         post_hint: post.post_hint,
         thumbnail: post.thumbnail,
       });
-      
+    }catch(error){
+      console.log("error", error);
     }
+    }
+    
     
   }else if(type==="subreddits"){
     for(let subreddit of list){
       subreddit.data ? subreddit = subreddit.data : subreddit = subreddit;
       const dateTime = dateFormatter(subreddit.created_utc * 1000);
-      console.log("dateTime",dateTime)
       listWithMetaData.push({
         id: subreddit.id,
         name: subreddit.name,
@@ -111,5 +113,6 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
       })
     }
   }
+  console.log("listWithMetaData",listWithMetaData);
   return listWithMetaData;
 };

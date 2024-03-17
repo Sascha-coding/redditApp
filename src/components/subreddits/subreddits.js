@@ -10,22 +10,24 @@ import {
   toggleCloseAllComments,
   postsThunk,
   subredditSelector,
-  loadFromDbSelector,
 } from "../../features/redditSlice";
 
 function Subreddits(props) {
   const dispatch = useDispatch();
   const selectedSubreddit =useSelector(subredditSelector)
   const subreddits = useSelector(selectSubReddits);
-  const loadFromDb = useSelector(loadFromDbSelector);
+  const prefix = useSelector(subredditSelector)
   useEffect(() => {
-    
+    if(!prefix){
+      initializeSelectedSubreddit()
+    }
     AddAnimations1();
     AddAnimations2();
     animate(subreddits);
     
   },[subreddits])
   const loadSubreddit = async (subreddit) => {
+    
     let audio = document.getElementById("audio2");
     audio.currentTime = 0;
     audio.play()
@@ -85,7 +87,7 @@ function Subreddits(props) {
                 <hr
                   className={style.subredditHr + " " + style.subredditHr2}
                 ></hr>
-                <button></button>
+
               </div>
               
             </button>

@@ -33,7 +33,8 @@
     "redux": "^5.0.1",
     "snoowrap": "github:not-an-aardvark/snoowrap",
     "stream-browserify": "^3.0.0",
-    "videojs-youtube": "^3.0.1"
+    "videojs-youtube": "^3.0.1",
+    "viz.js": "^2.1.2"
   },
   "browserslist": {
     "production": [

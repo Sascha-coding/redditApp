@@ -3,7 +3,6 @@ import styles from "./subredditBrowser.module.css";
 import style from "../subreddits/subreddits.module.css"; 
   function ResultsRow(props) {
     const subreddit = props.subreddit;
-    console.log(subreddit);
     const display = props.display;
 	return (
             <div className={styles.resultLine}>

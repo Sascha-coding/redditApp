@@ -17,92 +17,163 @@ function SubredditBrowser(props) {
   const dispatch = useDispatch();
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState([]);
+  const [browsePages, setBrowsePages] = useState([]);
   const subredditList = useSelector(subredditsListSelector);
   const [filteredSubreddits, setFilteredSubreddits] = useState([]);
   const isLoading = useSelector(isLoadingSelector);
-  const [more, setMore] = useState(true);
   const [query, setQuery] = useState("");
-  const [searchResult, setSearchResult] = useState([]);
+  const [searchResults, setSearchResults] = useState({});
   const subreddits = useSelector(selectSubReddits);
   const [display, setDisplay] = useState("Browse");
   const [savedPages, setSavedPages] = useState([]);
+  const [more, setMore] = useState(false);
+
   useEffect(() => {
-    let newFilteredSubreddits = [];
-    if (
-      display === "Browse" &&
-      pages.flat().length < filteredSubreddits.length
-    ) {
-      generateResultLine(filteredSubreddits);
-      return;
-    }
-    if (display === "Saved") {
-      generateResultLine(subreddits);
-      return;
-    }  
-    if (
-        (subredditList.length > 0 || searchResult.length > 0) &&
-        more === true &&
-        isLoading === false
-      ) {
-        if (subreddits.length > 0) {
-          for (let sub of subreddits) {
-            if (newFilteredSubreddits.length === 0) {
-              newFilteredSubreddits = subredditList.filter(
-                (subreddit) => sub.id !== subreddit.id
-              );
-            } else {
-              newFilteredSubreddits = newFilteredSubreddits.filter(
-                (subreddit) => sub.id !== subreddit.id
-              );
+    const initializePages = async () => {
+      // Filter subreddits
+      let filtered = await subredditList.filter((sub) => {
+        return !subreddits.some(
+          (subreddit) => sub.display_name === subreddit.display_name
+        );
+      });
+      if (more === true) {
+        filtered = filteredSubreddits.concat(filtered);
+        setFilteredSubreddits(filtered);
+      }else{
+        setFilteredSubreddits(filtered);
+      }
+      
+      console.log("setting filtered", filtered);
+      
+
+      // Generate pages
+      const newBrowsePages = await generatePages(filtered);
+      
+      const newSavedPages = await generatePages(subreddits);
+      
+      if (more === true) {
+        setMore(false);
+        if(Object.keys(searchResults).length > 0){
+          const keys = Object.keys(searchResults);
+          let newSearchResultsArr = {...searchResults};
+          for(let key of keys){
+            let newSearchResults
+            newSearchResults = await searchSubreddits(key, subredditList);
+            newSearchResultsArr[key] = newSearchResultsArr[key].concat(newSearchResults);
+        }
+        setSearchResults(newSearchResultsArr);
+        let newPages = [];
+        let newPage = [];
+        console.log("query = "+query);
+        console.log("newSearchResultsArr[query] = "+JSON.stringify(newSearchResultsArr[query]));
+        for(let i = 0; i < newSearchResultsArr[query].length; i++){
+            
+            let entry = newSearchResultsArr[query][i];
+            newPage.push(entry);
+            if(newPage.length === 10){
+                console.log("pushing new page",newPage);
+                newPages.push(newPage);
+                newPage = [];
+            }else if(i === newSearchResultsArr[query].length - 1){
+                newPages.push(newPage);
+                console.log(newPages.length + " = newPages.length");
+                console.log(newPages);
+                
+                
             }
-          }
-          if (searchResult.length > 0 && query !== "") {
-            setFilteredSubreddits(newFilteredSubreddits);
-            rerender(newFilteredSubreddits);
-          } else {
-            setFilteredSubreddits(newFilteredSubreddits);
-            generateResultLine(newFilteredSubreddits);
-            setMore(false);
-          }
-        } else {
-          setFilteredSubreddits(subredditList);
-          generateResultLine(subredditList);
-          setMore(false);
+        }
+        setPages(newPages);
         }
       }
-    
-  }, [subredditList, searchResult, display, subreddits]);
-  const rerender = async (newFilteredSubreddits) => {
-    const newSearchResults = await searchSubreddits(
-      query,
-      newFilteredSubreddits
-    );
+      setBrowsePages(newBrowsePages);
+      setSavedPages(newSavedPages);
+      
+    };
+    if (filteredSubreddits.length === 0 || more === true) {
+      console.log("initializing pages");
+      initializePages();
+    }
+  }, [dispatch, subreddits, subredditList]);
 
-    setSearchResult(newSearchResults);
-    generateResultLine(newSearchResults, "continuesSearch");
-    setMore(false);
-  };
+  useEffect(() => {
+    if (display === "Saved" && query === "") {
+      setPages(savedPages);
+    } else if(display === "Browse" && query === "") {
+      setPages(browsePages);
+    }
+  }, [browsePages, savedPages, subreddits]);
   const subscribe = async (subreddit) => {
-    let type;
+    let type = display === "Saved" ? "unsubscribe" : "subscribe";
     let name = subreddit.display_name;
-
+    dispatch(addSubredditThunk({ name: name, type: type }));
     if (display === "Saved") {
-      type = "unsubscribe";
       let newFilteredSubreddits = [subreddit, ...filteredSubreddits];
-
-      setPages([]);
-
       setFilteredSubreddits(newFilteredSubreddits);
+      let newBrowsePages = [...browsePages];
+      if (newBrowsePages.length === 0) {
+        newSavedPages.push([subreddit]);
+      } else {
+        newBrowsePages[newBrowsePages.length - 1].length < 10
+          ? newBrowsePages[newBrowsePages.length - 1].push(subreddit)
+          : newBrowsePages.push([subreddit]);
+      }
+      setBrowsePages(newBrowsePages);
+
+      let newSavedPages = [...savedPages];
+      let newSavedPagesFlat = newSavedPages.flat();
+      newSavedPagesFlat = newSavedPagesFlat.filter(
+        (sub) => sub.display_name !== name
+      );
+      newSavedPages = [];
+      let newPage = [];
+      for (let entry of newSavedPagesFlat) {
+        newPage.push(entry);
+        if (newPage.length === 10) {
+          newSavedPages.push(newPage);
+          newPage = [];
+        } else if (entry === newSavedPagesFlat[newSavedPagesFlat.length - 1]) {
+          newSavedPages.push(newPage);
+        }
+      }
+      console.log("new BrowsePages", newSavedPages);
+      setSavedPages(newSavedPages);
     } else {
-      type = "subscribe";
       let newFilteredSubreddits = filteredSubreddits.filter(
         (sub) => sub.display_name !== name
       );
-      setPages([]);
-
       setFilteredSubreddits(newFilteredSubreddits);
+      let newSavedPages = [...savedPages];
+      if (newSavedPages.length === 0) {
+        newSavedPages.push([subreddit]);
+      } else {
+        newSavedPages[newSavedPages.length - 1].length < 10
+          ? newSavedPages[newSavedPages.length - 1].push(subreddit)
+          : newSavedPages.push([subreddit]);
+      }
+
+      setSavedPages(newSavedPages);
+
+      let newBrowsePages = [...browsePages];
+      let newBrowsePagesFlat = newBrowsePages.flat();
+      newBrowsePagesFlat = newBrowsePagesFlat.filter(
+        (sub) => sub.display_name !== name
+      );
+      newBrowsePages = [];
+      let newPage = [];
+      for (let entry of newBrowsePagesFlat) {
+        newPage.push(entry);
+        if (newPage.length === 10) {
+          newBrowsePages.push(newPage);
+          newPage = [];
+        } else if (
+          entry === newBrowsePagesFlat[newBrowsePagesFlat.length - 1]
+        ) {
+          newBrowsePages.push(newPage);
+        }
+      }
+      console.log("new BrowsePages", newBrowsePages);
+      setBrowsePages(newBrowsePages);
     }
-    dispatch(addSubredditThunk({ name: name, type: type }));
   };
   const changePage = async (direction) => {
     let newPage;
@@ -123,35 +194,31 @@ function SubredditBrowser(props) {
   };
 
   const loadMore = async () => {
+    setMore(true);
     const after = subredditList[subredditList.length - 1].name;
-    const length = subredditList.length;
     dispatch(
       browseSubredditCategorysThunk({
-        subredditList: subredditList,
         after: after,
       })
     );
-    setPage(0); // sollte vlt geändert werden das es bei der selben page bleibt und eine neue suche gestartet wird um die alte zu erweitern
-    setMore(true);
   };
-  const generateResultLine = async (list, type) => {
+  const generatePages = async (list, type) => {
     let page = [];
-
-    let newPages, begin;
-    if (display === "Saved") {
-      newPages = [];
-      begin = newPages.length;
+    let newPages;
+    if (type === "more") {
+      newPages = [...browsePages];
     } else {
-      newPages = type ? [] : [...pages];
-      begin = pages.flat().length;
+      newPages = [];
     }
 
+    let begin = newPages.length;
+
     if (
-      pages[pages.length - 1] &&
-      pages[pages.length - 1].length !== 10 &&
+      newPages[newPages.length - 1] &&
+      newPages[newPages.length - 1].length !== 10 &&
       display === "Browse"
     ) {
-      page = pages[pages.length - 1];
+      page = newPages[pages.length - 1];
     }
 
     for (let i = begin; i < list.length; i++) {
@@ -165,33 +232,84 @@ function SubredditBrowser(props) {
       }
     }
 
-
-    if (display === "Saved") {
-      setSavedPages(newPages);
-    } else {
-      setPages(newPages);
-    }
-
-    setMore(false);
+    return newPages;
   };
+
   const handleDisplay = async (display) => {
-    setPages([]);
-    setSavedPages([]);
+    setPage(0);
+    document.getElementById("searchBrowser").value = "";
+    if(query !== ""){
+        setSearchResults({});
+        setQuery("");
+    }
+    if (display === "Saved") {
+      setPages(savedPages);
+    } else {
+      setPages(browsePages);
+    }
+    
     setDisplay(display);
   };
-  const handleChange = async (e) => {
-    setQuery(e.target.value);
-    const searchResults = await searchSubreddits(
+  const handleSearch = async (e) => {
+    if(e.target.value.length === 0){
+        setQuery("");
+        setSearchResults({});
+        const newPages = display === "Saved" ? savedPages : browsePages;
+        setPages(newPages);
+        return;
+    }
+    let neededArray = searchResults[query];
+    if (Object.keys(searchResults).length === 0) {
+      neededArray = display === "Saved" ? savedPages : browsePages;
+    }else if (Object.keys(searchResults).length !== 0) {
+      if (query.length > e.target.value.length) {
+        let prevStr = query.substring(0, query.length - 1);
+        console.log("prevStr", prevStr);
+        neededArray = searchResults[query.substring(0, query.length - 1)];
+      } else {
+        neededArray = searchResults[query];
+      }
+    } 
+
+    const newSearchResults = await searchSubreddits(
       e.target.value,
-      filteredSubreddits
+      neededArray
     );
-    if (searchResults.length > 0) {
-      setPages([]);
-      setSearchResult(searchResults);
-      setPage(0);
-      setMore(true);
+    let newSearchResultsArr;
+    if (newSearchResults) {
+      if (e.target.value.length > query.length) {
+        newSearchResultsArr = { ...searchResults };
+        newSearchResultsArr[e.target.value] = newSearchResults;
+        setSearchResults(newSearchResultsArr);
+      } else if (e.target.value.length < query.length) {
+        newSearchResultsArr = { ...searchResults };
+        delete newSearchResultsArr[query];
+        setSearchResults(newSearchResultsArr);
+      }
+    }
+
+    setQuery(e.target.value);
+    if(e.target.value.length === 0){
+        setPages([]);
+    }
+    if (newSearchResults.length > 0) {
+      const newPages = [];
+      let newPage = [];
+      for (let entry of newSearchResults) {
+        newPage.push(entry);
+        if (newPage.length === 10) {
+          newPages.push(newPage);
+          newPage = [];
+        } else if (entry === newSearchResults[newSearchResults.length - 1]) {
+          newPages.push(newPage);
+          console.log("newPages pre more", newPages);
+          setPages(newPages);
+          if (page > newPages.length - 1) {
+            setPage(newPages.length - 1);
+          }
+        }
+      }
     } else {
-      setSearchResult([]);
       setPages([]);
     }
   };
@@ -202,9 +320,10 @@ function SubredditBrowser(props) {
         <h1 className={styles.browserH1}>Subreddit Browser</h1>
         <div className={"searchContainer " + styles.search}>
           <input
-            onChange={(e) => handleChange(e)}
+            onChange={(e) => handleSearch(e)}
             className="searchInput"
             placeholder="Search"
+            id="searchBrowser"
           ></input>
           <button className={"submitButton " + styles.searchButton}>
             {"🔍"}
@@ -236,14 +355,14 @@ function SubredditBrowser(props) {
         <div className={styles.browserResults}>
           {isLoading ? (
             <h1 className={styles.loadingH1}> Loading... </h1>
-          ) : query !== "" && searchResult.length === 0 ? (
+          ) : query !== "" && Object.keys(searchResults).length === 0 ? (
             <h1 className={styles.loadingH1}>
               {" "}
               {'No matches found for "' + query + '"'}{" "}
             </h1>
-          ) : filteredSubreddits.length > 0 &&
+          ) : (
+            filteredSubreddits.length > 0 &&
             pages.length > 0 &&
-            display === "Browse" ? (
             pages[page].map((subreddit) => (
               <ResultsRow
                 display={display}
@@ -251,17 +370,7 @@ function SubredditBrowser(props) {
                 subreddit={subreddit}
               />
             ))
-          ) : subreddits.length > 0 &&
-            savedPages.length > 0 &&
-            display === "Saved" ? (
-            savedPages[page].map((subreddit) => (
-              <ResultsRow
-                display={display}
-                subscribe={subscribe}
-                subreddit={subreddit}
-              />
-            ))
-          ) : null}
+          )}
         </div>
       </div>
       <div className={styles.buttonDiv}>
@@ -278,11 +387,7 @@ function SubredditBrowser(props) {
             </button>
           </div>
           <div className={styles.pagesRow}>
-            <Pagination
-              page={page}
-              pages={display === "Browse" ? pages : savedPages}
-              changePage={changePage}
-            />
+            <Pagination page={page} pages={pages} changePage={changePage} />
           </div>
           <div className={styles.nextDiv}>
             <button

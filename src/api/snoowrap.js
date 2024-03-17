@@ -39,14 +39,14 @@ const scopes = [
 ];
 let code;
 let state;
-if(sessionStorage.getItem("code")){
+if (sessionStorage.getItem("code")) {
   code = sessionStorage.getItem("code");
-}else if(searchParams.size !== 0){
+} else if (searchParams.size !== 0) {
   code = searchParams.get("code");
   state = searchParams.get("state");
   sessionStorage.setItem("code", code);
   sessionStorage.setItem("state", state);
-}else if (searchParams.size === 0) {
+} else if (searchParams.size === 0) {
   allowAccess();
   function allowAccess() {
     const urlParams = new URLSearchParams();
@@ -97,7 +97,7 @@ const getToken = async (body) => {
   const json = await response.json();
   return json;
 };
-const getUser = async (accessToken) =>{
+const getUser = async (accessToken) => {
   const response = await fetch(`https://oauth.reddit.com/api/v1/me`, {
     method: "GET",
     headers: {
@@ -128,9 +128,13 @@ const initializeAPI = async () => {
       code: code,
       grant_type: "authorization_code",
       redirect_uri: REDIRECT_URI,
-    }); 
-    accessToken = sessionStorage.getItem("accessToken") ? sessionStorage.getItem("accessToken") : token.access_token;
-    refreshToken = sessionStorage.getItem("refreshToken") ? sessionStorage.getItem("refreshToken") : token.refresh_token;
+    });
+    accessToken = sessionStorage.getItem("accessToken")
+      ? sessionStorage.getItem("accessToken")
+      : token.access_token;
+    refreshToken = sessionStorage.getItem("refreshToken")
+      ? sessionStorage.getItem("refreshToken")
+      : token.refresh_token;
     sessionStorage.setItem("accessToken", accessToken);
     sessionStorage.setItem("refreshToken", refreshToken);
     user = await getUser(accessToken);
@@ -144,14 +148,12 @@ const initializeAPI = async () => {
     return reddit;
   }
 };
-const r = code
-    ? await initializeAPI()
-    : null;
+const r = code ? await initializeAPI() : null;
 
 export const embedVideos = (url) => {
   const endpoints = `https://www.reddit.com/api/oembed?url=${url}`;
   const request = fetch(endpoint);
-}
+};
 const apiLoaded = () => {
   const response = r ? true : false;
   return response;
@@ -162,25 +164,24 @@ const getSubReddits = async () => {
   return response;
 };
 const getPosts = async (prefix, posts, more) => {
-  if(more !== true){
+  if (more !== true) {
     const subreddit = await r.getSubreddit(prefix);
     posts = subreddit.getHot({ limit: 25 });
     return posts;
-  }else{
+  } else {
     let list = posts.list;
-    posts = {...posts};
-    
-    await list.fetchMore({ amount: 25 }).then(extendListing => {
-       list = extendListing;
+    posts = { ...posts };
+
+    await list.fetchMore({ amount: 25 }).then((extendListing) => {
+      list = extendListing;
     });
     return list;
   }
-  
 };
 async function getComments(id, limit = 25, depth = 10) {
   try {
     // Await the fetch operation to ensure comments are retrieved
-    const post = await r.getSubmission(id).fetch()
+    const post = await r.getSubmission(id).fetch();
     const comments = await post.comments;
     return comments; // Return the expanded comments
   } catch (error) {
@@ -189,43 +190,42 @@ async function getComments(id, limit = 25, depth = 10) {
   }
 }
 
-const sendVote = async (id, vote, type,thing) => {
+const sendVote = async (id, vote, type, thing) => {
   let response;
-  thing = {...thing};
+  thing = { ...thing };
   try {
     switch (type) {
       case "post":
-      if (vote === 1) {
-        if (thing.likes === true) {
-          response = await r.getSubmission(id).unvote();
-          thing.ups = thing.ups - 1;
-          thing.likes = null;
-        } else if (thing.likes === false) {
-          response = await r.getSubmission(id).upvote();
-          thing.ups = thing.ups + 2;
-          thing.likes = true;
-        } else if (thing.likes === null) {
-          response = await r.getSubmission(id).upvote();
-          thing.ups = thing.ups + 1;
-          thing.likes = true;
+        if (vote === 1) {
+          if (thing.likes === true) {
+            response = await r.getSubmission(id).unvote();
+            thing.ups = thing.ups - 1;
+            thing.likes = null;
+          } else if (thing.likes === false) {
+            response = await r.getSubmission(id).upvote();
+            thing.ups = thing.ups + 2;
+            thing.likes = true;
+          } else if (thing.likes === null) {
+            response = await r.getSubmission(id).upvote();
+            thing.ups = thing.ups + 1;
+            thing.likes = true;
+          }
+        } else if (vote === -1) {
+          if (thing.likes === false) {
+            response = await r.getSubmission(id).unvote();
+            thing.ups = thing.ups + 1;
+            thing.likes = null;
+          } else if (thing.likes === true) {
+            response = await r.getSubmission(id).downvote();
+            thing.ups = thing.ups - 2;
+            thing.likes = false;
+          } else if (thing.likes === null) {
+            response = await r.getSubmission(id).downvote();
+            thing.ups = thing.ups - 1;
+            thing.likes = false;
+          }
         }
-      } else if (vote === -1) {
-
-        if (thing.likes === false) {
-          response = await r.getSubmission(id).unvote();
-          thing.ups = thing.ups + 1;
-          thing.likes = null;
-        } else if (thing.likes === true) {
-          response = await r.getSubmission(id).downvote();
-          thing.ups = thing.ups - 2;
-          thing.likes = false;
-        } else if (thing.likes === null) {
-          response = await r.getSubmission(id).downvote();
-          thing.ups = thing.ups - 1;
-          thing.likes = false;
-        }
-      }
-      break;
+        break;
       case "comment":
         if (vote === 1) {
           if (thing.likes === true) {
@@ -242,7 +242,6 @@ const sendVote = async (id, vote, type,thing) => {
             thing.likes = true;
           }
         } else if (vote === -1) {
-  
           if (thing.likes === false) {
             response = await r.getComment(id).unvote();
             thing.ups = thing.ups + 1;
@@ -260,48 +259,75 @@ const sendVote = async (id, vote, type,thing) => {
         break;
       default:
         break;
-  
-      }
+    }
     return thing;
   } catch (error) {
     console.error(error);
   }
-}
+};
 
-export const browseSubreddits = async(after) => {
-  console.log(after);
-  try{
-    const response = await fetch(`https://www.reddit.com/reddits.json?limit=100&after=${after}`);
+export const browseSubreddits = async (after) => {
+  try {
+    const response = await fetch(
+      `https://www.reddit.com/reddits.json?limit=100&after=${after}`
+    );
     const json = await response.json();
     const result = json.data.children;
     return result;
-  }catch(error){
+  } catch (error) {
     console.log(error);
   }
-}
+};
 
-export const subscribeSubreddit = async(name,type) => {
-  try{
-    
-    let response, subreddit
-    if(type === "subscribe"){
-       subreddit = await r.getSubreddit(name);
-       response = await subreddit.subscribe();
-       subreddit = await subreddit.fetch();
-       return subreddit;
-    }else{
-       subreddit = await r.getSubreddit(name);
-       response = await subreddit.unsubscribe();
-       subreddit = await subreddit.fetch();
-       console.log(subreddit);
-       return subreddit;
-    } 
-    
-    
-  }catch(error){
+export const subscribeSubreddit = async (name, type) => {
+  try {
+    let response, subreddit;
+    if (type === "subscribe") {
+      subreddit = await r.getSubreddit(name);
+      response = await subreddit.subscribe();
+      subreddit = await subreddit.fetch();
+      return subreddit;
+    } else {
+      subreddit = await r.getSubreddit(name);
+      response = await subreddit.unsubscribe();
+      subreddit = await subreddit.fetch();
+      return subreddit;
+    }
+  } catch (error) {
     console.log(error);
   }
-}
+};
 
-export { API_ROOT }
-export { getSubReddits, getPosts, getComments, sendVote, apiLoaded }
+// Get a random submission from all subscribed subreddits
+export async function getRandomSubmissions(length, init) {
+  let posts = [];
+  if (init !== true) {
+      for (let i = length; i < 25; i++) {
+          const subscriptions = await getSubReddits();
+          const randomSubreddit = subscriptions[Math.floor(Math.random() * subscriptions.length)];
+          const submissions = await r.getSubreddit(randomSubreddit.display_name).getHot({ limit: 10 });
+          const num = Math.floor(Math.random() * submissions.length);
+          const submission = submissions[num];
+          const result = await submission.fetch();         
+          posts.push(result);
+      }
+      return posts;
+  } else if(init === true) {
+      const subscriptions = await getSubReddits();
+      const randomSubreddit = subscriptions[Math.floor(Math.random() * subscriptions.length)];
+      const submissions = await r.getSubreddit(randomSubreddit.display_name).getHot({ limit: 10 });
+      const num = Math.floor(Math.random() * submissions.length);
+      const submission = submissions[num];
+      const result = await submission.fetch();
+      console.log("fetchRandomPosts x1 ", result); // Returning a single submission
+      return result; // Returning an array with a single submission
+  }
+}
+export { API_ROOT };
+export {
+  getSubReddits,
+  getPosts,
+  getComments,
+  sendVote,
+  apiLoaded,
+};
