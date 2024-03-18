@@ -29,13 +29,14 @@ function Reddit(props) {
   const id = posts && posts.length > 0 ? posts[posts.length - 1].name : "";
   const fittingPosts = useSelector(fittingPostsSelector);
   const closeAllComments = useSelector(selectCloseAllComments);
+  const [sorting , setSorting] = useState("hot");
   let [leIndex, setLeIndex] = useState(0);
   leIndex = leIndex ? leIndex : 0;
 
   const allObservingArrayOfObservingObservers = [];
   useEffect(() => {
     if (!posts || posts.length === 0) {
-      dispatch(postsThunk({ prefix: prefix, posts: [] }));
+      dispatch(postsThunk({ prefix: prefix, posts: [], more: false, sorting:sorting }));
     }
     if (leIndex !== 0) {
       setLeIndex(posts.length);
@@ -81,8 +82,8 @@ function Reddit(props) {
     leIndex = curIndex;
   };
   const scrollToTop = () => {
-    const wrapper = document.getElementById("mainWrapper");
-    wrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    const top = document.getElementById("headlineDiv");
+    top.scrollIntoView({ behavior: "smooth", block: "start" });
     leIndex = 0;
   };
   const scrollToBottom = () => {
@@ -109,6 +110,12 @@ function Reddit(props) {
     }, 500);
     timeOutArray.push(timeOutId);
   }
+  const handleSorting = (e) => {
+    console.log(e.target.value);
+    setSorting(e.target.value);
+    dispatch(postsThunk({ prefix: prefix, posts: [], more:false, sorting: e.target.value }));
+  }
+  console.log(posts);
   return (
     <>
       <main
@@ -120,7 +127,18 @@ function Reddit(props) {
       >
         {
           <>
-            <h2 className={styles.subredditH2}>{prefix}</h2>
+            <div id={"headlineDiv"} className={styles.headlineDiv}>
+              <h2 className={styles.subredditH2}>{prefix}</h2>
+              
+              {!loadFromDb && fittingPosts.length === 0 ?
+                <div className={styles.sortDiv}>
+                  <label>get Posts by: </label>
+                  <select defaultValue = "hot" onChange={(e) => handleSorting(e)}>
+                    <option value="hot">Hottest</option>
+                    <option value="recent">Newest</option>
+                  </select>
+                </div>:null}
+            </div>
             <div id="mainWrapper" className={styles.wrapper}>
               {loadFromDb
                 ? DBPosts.map((post, index) => (

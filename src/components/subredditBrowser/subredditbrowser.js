@@ -13,6 +13,7 @@ import Pagination from "./pagination.js";
 import { searchSubreddits } from "../../functionality/searchSubreddits.js";
 
 import ResultsRow from "./subscribeButton.js";
+import { postsThunk } from "../../features/redditSlice.js";
 function SubredditBrowser(props) {
   const dispatch = useDispatch();
   const [page, setPage] = useState(0);
@@ -42,10 +43,6 @@ function SubredditBrowser(props) {
       }else{
         setFilteredSubreddits(filtered);
       }
-      
-      console.log("setting filtered", filtered);
-      
-
       // Generate pages
       const newBrowsePages = await generatePages(filtered);
       
@@ -64,22 +61,15 @@ function SubredditBrowser(props) {
         setSearchResults(newSearchResultsArr);
         let newPages = [];
         let newPage = [];
-        console.log("query = "+query);
-        console.log("newSearchResultsArr[query] = "+JSON.stringify(newSearchResultsArr[query]));
         for(let i = 0; i < newSearchResultsArr[query].length; i++){
             
             let entry = newSearchResultsArr[query][i];
             newPage.push(entry);
             if(newPage.length === 10){
-                console.log("pushing new page",newPage);
                 newPages.push(newPage);
                 newPage = [];
             }else if(i === newSearchResultsArr[query].length - 1){
                 newPages.push(newPage);
-                console.log(newPages.length + " = newPages.length");
-                console.log(newPages);
-                
-                
             }
         }
         setPages(newPages);
@@ -90,7 +80,6 @@ function SubredditBrowser(props) {
       
     };
     if (filteredSubreddits.length === 0 || more === true) {
-      console.log("initializing pages");
       initializePages();
     }
   }, [dispatch, subreddits, subredditList]);
@@ -106,6 +95,7 @@ function SubredditBrowser(props) {
     let type = display === "Saved" ? "unsubscribe" : "subscribe";
     let name = subreddit.display_name;
     dispatch(addSubredditThunk({ name: name, type: type }));
+    dispatch(postsThunk({ prefix: "r/"+name, posts: [], more: false }));
     if (display === "Saved") {
       let newFilteredSubreddits = [subreddit, ...filteredSubreddits];
       setFilteredSubreddits(newFilteredSubreddits);
@@ -135,7 +125,6 @@ function SubredditBrowser(props) {
           newSavedPages.push(newPage);
         }
       }
-      console.log("new BrowsePages", newSavedPages);
       setSavedPages(newSavedPages);
     } else {
       let newFilteredSubreddits = filteredSubreddits.filter(
@@ -171,7 +160,6 @@ function SubredditBrowser(props) {
           newBrowsePages.push(newPage);
         }
       }
-      console.log("new BrowsePages", newBrowsePages);
       setBrowsePages(newBrowsePages);
     }
   };
@@ -264,7 +252,6 @@ function SubredditBrowser(props) {
     }else if (Object.keys(searchResults).length !== 0) {
       if (query.length > e.target.value.length) {
         let prevStr = query.substring(0, query.length - 1);
-        console.log("prevStr", prevStr);
         neededArray = searchResults[query.substring(0, query.length - 1)];
       } else {
         neededArray = searchResults[query];
@@ -302,7 +289,6 @@ function SubredditBrowser(props) {
           newPage = [];
         } else if (entry === newSearchResults[newSearchResults.length - 1]) {
           newPages.push(newPage);
-          console.log("newPages pre more", newPages);
           setPages(newPages);
           if (page > newPages.length - 1) {
             setPage(newPages.length - 1);

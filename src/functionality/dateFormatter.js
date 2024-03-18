@@ -1,5 +1,5 @@
 
-function dateFormatter(date){
+async function dateFormatter(date){
   date = new Date(date);
   const isoString = date.toISOString();
   const localeString = date.toLocaleDateString("en-US", {

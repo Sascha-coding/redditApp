@@ -140,11 +140,6 @@ const initializeAPI = async () => {
     user = await getUser(accessToken);
     reddit = await initializeSnoowrap();
     localStorage.setItem("done", true);
-    console.log(user);
-    console.log(reddit);
-    console.log(accessToken);
-    console.log(refreshToken);
-    console.log(user.id);
     return reddit;
   }
 };
@@ -163,17 +158,37 @@ const getSubReddits = async () => {
   const response = await r.getSubscriptions();
   return response;
 };
-const getPosts = async (prefix, posts, more) => {
+const getPosts = async (prefix, posts, more,sorting) => {
+  sorting == "undefined" ? sorting = "recent" : sorting = sorting;
+  console.log(sorting)
   if (more !== true) {
     const subreddit = await r.getSubreddit(prefix);
-    posts = subreddit.getHot({ limit: 25 });
-    return posts;
+    if(sorting === "recent"){
+      posts = await subreddit.getNew({ limit: 25 })
+      .then((list) => {
+        list["list"] = list;
+        return list;
+      })
+      console.log(posts);
+      return posts;
+    }else{
+      posts = await subreddit.getHot({ limit: 25 })
+      .then((list) => {
+        list["list"] = list;
+        return list;
+      })
+      console.log(posts);
+      return posts;
+    }
+    
   } else {
     let list = posts.list;
+    let length = list.length;
     posts = { ...posts };
 
     await list.fetchMore({ amount: 25 }).then((extendListing) => {
-      list = extendListing;
+      list = extendListing
+      list["list"] = list;
     });
     return list;
   }
@@ -305,7 +320,7 @@ export async function getRandomSubmissions(length, init) {
       for (let i = length; i < 25; i++) {
           const subscriptions = await getSubReddits();
           const randomSubreddit = subscriptions[Math.floor(Math.random() * subscriptions.length)];
-          const submissions = await r.getSubreddit(randomSubreddit.display_name).getHot({ limit: 10 });
+          const submissions = await r.getSubreddit(randomSubreddit.display_name).getNew({ limit: 10 });
           const num = Math.floor(Math.random() * submissions.length);
           const submission = submissions[num];
           const result = await submission.fetch();         
@@ -315,11 +330,10 @@ export async function getRandomSubmissions(length, init) {
   } else if(init === true) {
       const subscriptions = await getSubReddits();
       const randomSubreddit = subscriptions[Math.floor(Math.random() * subscriptions.length)];
-      const submissions = await r.getSubreddit(randomSubreddit.display_name).getHot({ limit: 10 });
+      const submissions = await r.getSubreddit(randomSubreddit.display_name).getNew({ limit: 10 });
       const num = Math.floor(Math.random() * submissions.length);
       const submission = submissions[num];
       const result = await submission.fetch();
-      console.log("fetchRandomPosts x1 ", result); // Returning a single submission
       return result; // Returning an array with a single submission
   }
 }

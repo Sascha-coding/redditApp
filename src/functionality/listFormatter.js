@@ -7,14 +7,13 @@ import {
 
 export const listformatter = async (list, type, startIndex, endIndex,prevPosts) => {
   const listWithMetaData = [];
-  console.log("list in listFormatter", list)
   if (type === "comments") {
     for (let comment of list) {
       if (!comment.subreddit_id) {
         continue;
       }
       const created = Number(comment.created) * 1000;
-      const dateTime = dateFormatter(created);
+      const dateTime = await dateFormatter(created);
       listWithMetaData.push({
         id: comment.id,
         name: comment.name,
@@ -33,7 +32,6 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
     for (let i = startIndex; i < endIndex; i++) {
       try{
       let post = list[i];
-      console.log("post in listFormatter", post);
       let duplicate = prevPosts?.find((entry) => entry.id === post.id)
       if(duplicate){
         continue;
@@ -55,7 +53,7 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
         isVideo = false;
       }
       const selfText = replaceLinks(post.selftext);
-      const dateTime = dateFormatter(post.created * 1000);
+      const dateTime = await dateFormatter(post.created * 1000);
       let media;
       if( post.post_hint === "rich:video"){
       media = post.media_embed.content;
@@ -65,7 +63,7 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
       }else{
         media = null;
       }
-      
+
       listWithMetaData.push({
         id: post.id,
         name: post.name,
@@ -113,6 +111,9 @@ export const listformatter = async (list, type, startIndex, endIndex,prevPosts) 
       })
     }
   }
-  console.log("listWithMetaData",listWithMetaData);
+  if(type === "posts"){
+    listWithMetaData["list"] = list.list;
+  }
+  console.log(listWithMetaData);
   return listWithMetaData;
 };

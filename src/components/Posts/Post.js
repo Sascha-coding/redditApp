@@ -118,6 +118,7 @@ function Post(props) {
     await props.removePostFromDb(post.id,props.subreddit);
     props.loadFromDb ? setPostIsDeleted(true) : null;
   }
+  //console.log(post);
   return (
     
     !postIsDeleted ?  

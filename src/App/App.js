@@ -61,7 +61,7 @@ const App = (props) => {
   useEffect(() => {
     dispatch(fetchSubreddits());
     if(!entered && ready && !randomPostsPromise && randomPosts && randomPosts.length === 0 ){
-      randomPostsPromise = new Promise((resolve, reject) => {
+      /*randomPostsPromise = new Promise((resolve, reject) => {
         try {
           dispatch(randomPostsThunk({ posts: [], init: false }))
             .then(() => {
@@ -79,7 +79,7 @@ const App = (props) => {
       randomPostsPromise.then(() => {
       }).catch(() => {
         console.error('Error fetching rnd post:', error);
-      });
+      });*/
     }
     async function init() {
       dispatch(initializeState(subreddits));

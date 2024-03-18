@@ -52,21 +52,34 @@ const commentsThunk = createAsyncThunk("reddit/commentsThunk", fetchComments);
 
 const fetchPosts = async (argObj) => {
   try {
-    const { prefix, posts, more } = argObj;
+    const { prefix, posts, more, sorting } = argObj;
     if (prefix === "DB" || prefix === "DBPosts") {
       return;
     }
-
-    let result = await getPosts(prefix, posts, more);
-
+    const newPosts = [...posts];
+    let result = await getPosts(prefix, posts, more, sorting);
+    let addedPosts
+    if(more === true){
+      addedPosts = await listformatter(result, "posts", posts.length, posts.length + 25);
+    }else{
+      addedPosts = await listformatter(result, "posts", 0, 25);
+    }
+    let finalPosts = newPosts.concat(addedPosts);
+    finalPosts["list"] = addedPosts.list;
+    console.log("finalPosts", finalPosts);
+    /*let list = [...result];
     let startIndex, endIndex;
     if (more === true) {
       startIndex = posts.list.length;
       endIndex = result.length;
+      
     } else {
       startIndex = 0;
       endIndex = result.length;
-      posts["list"] = result;
+      
+      console.log("posts = ", posts);
+      console.log("list = ", list);
+      console.log("posts['list'] = ", posts["list"]);
     }
     const postsWithAddedList = await listformatter(
       result,
@@ -75,10 +88,13 @@ const fetchPosts = async (argObj) => {
       endIndex,
       posts
     );
-    let finalPosts = posts ? [...posts] : [];
-    finalPosts.splice(finalPosts.length, 1);
-    finalPosts = finalPosts.concat(postsWithAddedList);
-    return { posts: finalPosts, prefix: prefix, list: result };
+    if(more === true){
+      postsWithAddedList["list"] = posts.list.concat(list);
+    }else{
+      postsWithAddedList["list"] = list;
+    }*/
+
+    return { posts: finalPosts, prefix: prefix};
   } catch (error) {
     console.log(error);
   }
@@ -231,7 +247,6 @@ const options = {
     },
     removeFirstRndPost(state) {
       state.randomPosts.shift();
-      console.log("state.randomPosts after shift()", state.randomPosts);
     },
   },
 
@@ -240,7 +255,6 @@ const options = {
       .addCase(postsThunk.fulfilled, (state, action) => {
         const posts = action.payload ? action.payload.posts : null;
         const prefix = action.payload ? action.payload.prefix : null;
-        const list = action.payload ? action.payload.list : null;
         state.posts[prefix] = posts;
         state.isLoading = false;
         state.error = false;

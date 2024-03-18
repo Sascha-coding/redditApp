@@ -50,7 +50,6 @@ function RandomPost(props) {
 
         singlePostPromise
           .then((newPost) => {
-            console.log("singlePost then")
             singlePostPromise = null;
             setPost(newPost);
             setLoading(false);
@@ -84,7 +83,6 @@ function RandomPost(props) {
       });
       randomPostsPromise
         .then(() => {
-          console.log("then App.js");
           randomPostsPromise = null;
           arrayLoaded = true;
         })
@@ -127,7 +125,6 @@ function RandomPost(props) {
       dispatch(removeFirstRndPost());
     }
   };
-  console.log("randomPosts = ", randomPosts);
   return (
     <main
       data-bs-spy="scroll"
