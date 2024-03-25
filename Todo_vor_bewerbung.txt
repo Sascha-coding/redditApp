@@ -1,0 +1,3 @@
+1. console.logs aufräumen.
+2. codeReview
+3. Documentation schreiben.

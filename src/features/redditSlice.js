@@ -182,20 +182,15 @@ const options = {
       state.closeAllComments = false;
     },
     setSearchTerm(state, action) {
-      const searchTerm = action.payload.searchTerm;
-      if (action.payload === "") {
+      if (action.payload.searchTerm === false) {
         state.fittingPosts = [];
         state.searchTerm = "";
       } else {
-        state.searchTerm = action.payload;
+        state.searchTerm = action.payload.searchTerm;
       }
     },
     searchPosts(state, action) {
       const { searchTerm, subreddit } = action.payload;
-      if (subreddit === "returnToInitialqxyyyzq") {
-        state.fittingPosts = [];
-        return;
-      }
       let foundPosts = [];
       state.fittingPosts = [];
       state.posts[subreddit].map((post, index) => {
